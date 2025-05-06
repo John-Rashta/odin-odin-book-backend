@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  username String
+  password String
+  icon Icon @relation(fields: [iconid], references: [id])
+  iconid Int
+  customIcon CustomIcon?
+  aboutMe String?
+  joinedAt DateTime
+  likedPosts Post[] @relation("postLikes")
+  myPosts Post[] @relation("postOwners")
+  follows User[] @relation("userFollows")
+  followers User[] @relation("userFollows")
+  comments Comment[] @relation("ownComment")
+  likedComments Comment[] @relation("likedComment")
+  receivedRequests Request[] @relation("receivedRequest")
+  sentRequests Request[] @relation("sentRequest")
+  notifications Notification[]
+}
+
+model Post {
+  id String @id @default(uuid())
+  content String
+  image CustomImage?
+  createdAt DateTime
+  creator User @relation("postOwners", fields: [creatorid], references: [id], onDelete: Cascade) 
+  creatorid String @unique
+  likes User[] @relation("postLikes")
+  comments Comment[]
+
+}
+
+model Comment {
+  id String @id @default(uuid())
+  content String
+  sentAt DateTime
+  post Post? @relation(fields: [postid], references: [id], onDelete: Cascade)
+  postid String? @unique
+  comment Comment? @relation("myComments", fields: [commentid], references: [id], onDelete: Cascade)
+  commentid String?
+  ownComments Comment[] @relation("myComments")
+  image CustomImage?
+  sender User @relation("ownComment", fields: [senderid], references: [id], onDelete: Cascade)
+  senderid String
+  likes User[] @relation("likedComment")
+}
+
+model Icon {
+  id Int @id @default(autoincrement())
+  users User[]
+  source String
+}
+
+model CustomIcon {
+  id String @id @default(uuid())
+  public_id String
+  url String
+  uploadAt DateTime
+  person User @relation(fields: [personid], references: [id], onDelete: Cascade)
+  personid String @unique
+}
+
+model CustomImage {
+  id String @id @default(uuid())
+  public_id String
+  url String
+  uploadAt DateTime
+  comment Comment? @relation(fields: [commentid], references: [id], onDelete: Cascade)
+  commentid String? @unique
+  post Post? @relation(fields: [postid], references: [id], onDelete: Cascade)
+  postid String? @unique
+}
+
+model Request {
+  id String @id @default(uuid())
+  target User @relation("receivedRequest", fields: [targetid], references: [id], onDelete: Cascade)
+  targetid String @unique
+  sender User @relation("sentRequest", fields: [senderid], references: [id], onDelete: Cascade)
+  senderid String @unique
+  sentAt DateTime
+  type Types
+}
+
+model Notification {
+  id String @id @default(uuid())
+  createdAt DateTime
+  content String
+  type NotiTypes
+  typeid String
+  user User @relation(fields: [userid], references: [id], onDelete: Cascade)
+  userid String @unique
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt   DateTime
+}
+
+enum Types {
+  FOLLOW
+}
+
+enum NotiTypes {
+  USER
+  POST
+  COMMENT
+  REQUEST
+}
