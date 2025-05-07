@@ -102,7 +102,7 @@ model Notification {
   createdAt DateTime
   content String
   type NotiTypes
-  typeid String
+  typeid String?
   user User @relation(fields: [userid], references: [id], onDelete: Cascade)
   userid String @unique
 }

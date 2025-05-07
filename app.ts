@@ -50,7 +50,7 @@ app.use(function(req: Request, res: Response, next: NextFunction) {
   next();
 });
 
-app.use(authRoute);
+app.use("auth",authRoute);
 
 app.use(errorHandler);
 
