@@ -4,10 +4,11 @@ import bcrypt from "bcryptjs";
 import "dotenv/config";
 import { VerifyFunction } from "passport-local";
 import { getUserForSession, getUserByNameForSession } from "../util/queries";
+import {Strategy as AnonymousStrategy} from "passport-anonymous";
 
 const verifyCallback: VerifyFunction = async (username, password, done) => {
   try {
-    const user = await getUserByNameForSession(username);
+    const user = await getUserByNameForSession(username, true);
     if (!user) {
       return done(null, false, { message: "Incorrect username" });
     }
@@ -25,6 +26,8 @@ const verifyCallback: VerifyFunction = async (username, password, done) => {
 const strategy = new localStrategy(verifyCallback);
 
 passport.use(strategy);
+
+passport.use(new AnonymousStrategy());
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

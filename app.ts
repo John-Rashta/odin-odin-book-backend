@@ -9,6 +9,7 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { type Request, type Response, type NextFunction } from "express";
+import authRoute from "./routes/authRoute";
 
 const PORT = 3000;
 
@@ -44,14 +45,12 @@ app.use(passport.session());
 
 const io = new Server(httpServer, { cors: corsOptions });
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
-
 app.use(function(req: Request, res: Response, next: NextFunction) {
   req.io = io;
   next();
 });
+
+app.use(authRoute);
 
 app.use(errorHandler);
 
