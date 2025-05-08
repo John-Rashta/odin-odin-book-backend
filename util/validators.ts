@@ -1,4 +1,5 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
+import { isAlphanumeric, isUUID } from "validator";
 
 const validateCredentials = [
     body("username")
@@ -39,9 +40,27 @@ const validateUUID = (fieldname: string) => {
     body("aboutMe").optional().isString(),
   ];
 
+  const validateRequest = [
+    body("id")
+      .isUUID()
+      .withMessage("Must be an UUID."),
+    body("type")
+      .isIn(["FOLLOW"])
+      .withMessage("Must be a valid type."),
+  ];
+
+  const validateSearch = [
+    query("user")
+    .custom((value) => {
+      return isUUID(value) || isAlphanumeric(value);
+    }),
+  ]
+
 export {
     validateCredentials,
     validateUUID,
     validateOptionalCredentials,
     validateUserProfile,
+    validateRequest,
+    validateSearch,
 };

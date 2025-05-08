@@ -1,23 +1,12 @@
-import { type UploadApiResponse } from "cloudinary";
-
-interface UserProfile {
-    aboutMe?: string;
-    icon?: number;
-};
-
-interface UserOptions {
-    username?: string;
-    password?: string;
-};
-
-interface UserUpdate extends UserProfile, UserOptions {
-    customIcon?: UploadApiResponse;
-};
-  
+type requestTypes = "FOLLOW";
+type requestUsers = "targetid" | "senderid";
+type notificationTypes = "USER" | "REQUEST" | "POST" | "COMMENT";
+type followTypes = "follows" | "followers";
 
 export {
-    UserProfile,
-    UserUpdate,
-    UserOptions,
+    requestTypes,
+    requestUsers,
+    notificationTypes,
+    followTypes,
 };
   

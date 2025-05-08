@@ -1,5 +1,6 @@
 import prisma from "../config/client";
-import { UserUpdate } from "./types";
+import { notificationsOptions, RequestOptions, searchOptions, UserUpdate } from "./interfaces";
+import { followTypes, requestUsers } from "./types";
 
 const getUserByNameForSession = async function getUserFromDatabaseByUsername(
     username: string, pass = false
@@ -43,7 +44,10 @@ const createUser = async function createUserInDatabase(username: string, passwor
             id: 1
           }
         }
-      }
+      },
+      omit: {
+        password: true
+      },
     });
 
   return possibleUser;
@@ -52,30 +56,51 @@ const createUser = async function createUserInDatabase(username: string, passwor
 const getMyNotifications = async function getCurrentUserNotifications(userid: string) {
     const possibleNotifications = await prisma.notification.findMany({
       where: {
-        userid
+        user: {
+          some: {
+            id: userid
+          }
+        }
       }
     });
 
   return possibleNotifications;
 };
 
-const deleteNotification = async function deleteThisNotificationByUser(userid: string, notifid: string) {
-  const possibleNotification = await prisma.notification.delete({
+const removeNotification = async function removeThisNotificationByUser(userid: string, notifid: string) {
+  const possibleUser = await prisma.user.update({
     where: {
-      userid,
-      id: notifid
-    }
+      id: userid
+    },
+    data: {
+      notifications: {
+        disconnect: {
+          id: notifid
+        }
+      }
+    },
+    omit: {
+      password: true
+    },
   });
-  return possibleNotification;
+  return possibleUser;
 };
 
-const clearAllMyNotifications = async function deleteAllNotificationsOfUser(userid: string) {
-  const possibleNotifications = prisma.notification.deleteMany({
+const clearAllMyNotifications = async function removeAllNotificationsOfUser(userid: string) {
+  const possibleUser = prisma.user.update({
     where: {
-      userid
-    }
+      id: userid
+    },
+    data: {
+      notifications: {
+        set: []
+      }
+    },
+    omit: {
+      password: true
+    },
   });
-  return possibleNotifications;
+  return possibleUser;
 };
 
 const getSelfIconsInfo = async function getAllInfoFromUser(userid: string) {
@@ -161,15 +186,305 @@ const changeUserInfo = async function updateUserDetails(
   return updatedUser;
 };
 
+const getUserReceivedRequests = async function getAllReceivedRequestsOfUser(userid: string) {
+  const possibleRequests = await prisma.request.findMany({
+    where: {
+      targetid: userid
+    },
+    orderBy: {
+      sentAt: "desc"
+    }
+  });
+
+  return possibleRequests;
+};
+
+const getUserSentRequests = async function getAllSentRequestsByUser(userid: string) {
+  const possibleRequests = await prisma.request.findMany({
+    where: {
+      senderid: userid
+    },
+    orderBy: {
+      sentAt: "desc"
+    }
+  });
+
+  return possibleRequests;
+};
+
+const deleteThisRequest = async function deleteRequestWhereUserIsPresent(userid: string, requestid: string, userType?: requestUsers ) {
+  const possibleRequest = await prisma.request.delete({
+    where: {
+      id: requestid,
+      ...(typeof userType === "string" 
+        ? { [userType]: userid }
+        : {
+          OR: [
+            {
+              targetid: userid
+            },
+            {
+              senderid: userid
+            }
+        ]}
+      ),
+    }
+  });
+
+  return possibleRequest;
+};
+
+const createFollowship = async function makeUserFollowAnotherUser(userid: string, targetid: string) {
+  const possibleUser = await prisma.user.update({
+    where: {
+      id: userid
+    },
+    data: {
+      follows: {
+        connect: {
+          id: targetid
+        }
+      }
+    },
+    omit: {
+      password: true
+    }
+  });
+
+  return possibleUser;
+};
+
+const stopFollowship = async function makeUserStopFollowAnotherUser(userid: string, targetid: string) {
+  const possibleUser = await prisma.user.update({
+    where: {
+      id: userid
+    },
+    data: {
+      follows: {
+        disconnect: {
+          id: targetid
+        }
+      }
+    },
+    omit: {
+      password: true
+    },
+  });
+
+  return possibleUser;
+};
+
+const makeRequest = async function makeRequestByUser(options: RequestOptions) {
+  const possibleRequest = await prisma.request.create({
+    data: {
+      ...options
+    }
+  });
+
+  return possibleRequest;
+};
+
+const createNotification = async function createNotificationForAction(options: notificationsOptions) {
+  const createdNotification = await prisma.notification.create({
+    data: {
+      createdAt: options.createdAt,
+      content: options.content,
+      type: options.type,
+      ...(typeof options.typeid === "string" ? {typeid: options.typeid} : {}),
+      user: {
+        connect: options.usersid.map(user => ({id: user})) || []
+      }
+    }
+  });
+  return createdNotification;
+};
+
+const getSomeUsers = async function getSomeUsersFromDatabase(options: searchOptions) {
+  const possibleUsers = prisma.user.findMany({
+    ...(typeof options.username === "string" ? {
+      where: {
+        username: {
+          contains: options.username
+        }
+      }
+    } : {}),
+    orderBy: {
+      username: "asc"
+    },
+    ...(typeof options.userid === "string" ? {
+      include: {
+        receivedRequests: {
+          where: {
+            id: options.userid
+          },
+          select: {
+            id: true,
+          },
+        },
+        followers: {
+          where: {
+            id: options.userid
+          },
+          select: {
+            id: true,
+          },
+        }
+      }
+    } : {}),
+    omit: {
+      password: true,
+    },
+    take: 30,
+  });
+
+  return possibleUsers;
+};
+
+const getThisUser = async function getSpecificUser(userid: string, myId?: string) {
+  const possibleUser = await prisma.user.findFirst({
+    where: {
+      id: userid
+    },
+    include: {
+      _count: {
+        select: {
+          followers: true,
+        }
+      },
+      icon: {
+        select: {
+          source: true,
+        }
+      },
+      customIcon: {
+        select: {
+          url: true,
+      },
+      }
+    },
+    omit: {
+      password: true
+    },
+    ...(typeof myId === "string" ? {
+      include: {
+        receivedRequests: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true,
+          },
+        },
+        followers: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true,
+          },
+        }
+      }
+    } : {}),
+  });
+
+  return possibleUser;
+};
+
+const getThisUserPosts = async function getAllOfUserPosts(userid: string) {
+  const possiblePosts = await prisma.post.findMany({
+    where: {
+      creatorid: userid
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return possiblePosts;
+};
+
+const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes) {
+  const possibleFollowers = await prisma.user.findMany({
+    where: {
+      [type]: {
+        some: {
+          id: userid
+        }
+      },
+    },
+    select: {
+      id: true,
+      username: true,
+      icon: {
+        select: {
+          source: true,
+        }
+      },
+      customIcon: {
+        select: {
+          url: true,
+        }
+      }
+    }
+  });
+
+  return possibleFollowers;
+};
+
+const getUserFeed = async function getSomeOfUserFeed(userid: string) {
+  const myFeed = await prisma.post.findMany({
+    where: {
+      creator: {
+        OR: [
+          {
+            followers: {
+              some: {
+                id: userid
+              }
+            },
+          },
+          {
+            id: userid
+          }
+        ]
+      }
+    },
+    include: {
+      image: {
+        select: {
+          url: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    },
+    take: 30,
+  });
+
+  return myFeed;
+};
+
 export {
   getUserByNameForSession,
   getUserForSession,
   createUser,
   getMyNotifications,
-  deleteNotification,
+  removeNotification,
   clearAllMyNotifications,
   getSelfIconsInfo,
   getIconInfo,
   deleteCustomIcon,
   changeUserInfo,
+  getUserReceivedRequests,
+  getUserSentRequests,
+  deleteThisRequest,
+  createFollowship,
+  stopFollowship,
+  makeRequest,
+  createNotification,
+  getSomeUsers,
+  getThisUser,
+  getThisUserPosts,
+  getMyFollowships,
+  getUserFeed,
 };

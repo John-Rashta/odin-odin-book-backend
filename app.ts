@@ -10,6 +10,9 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { type Request, type Response, type NextFunction } from "express";
 import authRoute from "./routes/authRoute";
+import usersRoute from "./routes/usersRoute";
+import notificationsRoute from "./routes/notificationsRoute";
+import requestsRoute from "./routes/requestsRoute";
 
 const PORT = 3000;
 
@@ -50,7 +53,10 @@ app.use(function(req: Request, res: Response, next: NextFunction) {
   next();
 });
 
-app.use("auth",authRoute);
+app.use("/auth",authRoute);
+app.use("/users", usersRoute);
+app.use("/notifications", notificationsRoute);
+app.use("/requests", requestsRoute);
 
 app.use(errorHandler);
 
@@ -79,7 +85,7 @@ io.on("connection", (socket) => {
   const req = socket.request as Request & { user: Express.User };
 
   if (req.user) {
-    socket.join(req.user.id);
+    socket.join(`self-${req.user.id}`);
   };
 
   ///socket.join(`session:${req.session.id}`);

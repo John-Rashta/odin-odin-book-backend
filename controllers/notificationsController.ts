@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
-import { clearAllMyNotifications, deleteNotification, getMyNotifications } from "../util/queries";
+import { clearAllMyNotifications, removeNotification, getMyNotifications } from "../util/queries";
 
 const getNotifications = asyncHandler(async (req, res) => {
     if (!req.user) {
@@ -19,7 +19,7 @@ const getNotifications = asyncHandler(async (req, res) => {
     return;
 });
 
-const removeNotification = asyncHandler(async (req, res) => {
+const clearNotification = asyncHandler(async (req, res) => {
     if (!req.user) {
         res.status(400).json();
         return;
@@ -27,9 +27,9 @@ const removeNotification = asyncHandler(async (req, res) => {
 
     const formData = matchedData(req); 
 
-    const deletedNotification = await deleteNotification(req.user.id, formData.id);
+    const possibleUser = await removeNotification(req.user.id, formData.id);
 
-    if (!deletedNotification) {
+    if (!possibleUser) {
         res.status(400).json({message: "Notification Not Found."});
         return;
     };
@@ -44,9 +44,9 @@ const clearNotifications = asyncHandler(async (req, res) => {
         return;
     };
 
-    const deletedNotifications = await clearAllMyNotifications(req.user.id);
+    const possibleUser = await clearAllMyNotifications(req.user.id);
 
-    if (!deletedNotifications) {
+    if (!possibleUser) {
         res.status(500).json({message: "Internal Error"});
         return;
     };
@@ -57,6 +57,6 @@ const clearNotifications = asyncHandler(async (req, res) => {
 
 export {
     getNotifications,
-    removeNotification,
+    clearNotification,
     clearNotifications,
 };
