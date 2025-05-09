@@ -44,6 +44,7 @@ interface PostOptions {
 
 interface CommentOptions {
     commentid?: string
+    postid: string
 };
 
 export {
