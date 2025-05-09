@@ -22,7 +22,7 @@ interface UserUpdate extends UserProfile, UserOptions {
     customIcon?: UploadApiResponse;
 };
 
-interface notificationsOptions {
+interface NotificationsOptions {
     createdAt: Date,
     content: string,
     type: notificationTypes,
@@ -30,16 +30,29 @@ interface notificationsOptions {
     usersid: string[],
 };
 
-interface searchOptions {
+interface SearchOptions {
     userid?: string,
     username?: string,
-  };
+};
+
+interface PostOptions {
+    content: string,
+    fileInfo?: UploadApiResponse,
+    userid: string,
+    createdAt: Date,
+};
+
+interface CommentOptions {
+    commentid?: string
+};
 
 export {
     RequestOptions,
     UserOptions,
     UserProfile,
     UserUpdate,
-    notificationsOptions,
-    searchOptions,
+    NotificationsOptions,
+    SearchOptions,
+    PostOptions,
+    CommentOptions,
 };

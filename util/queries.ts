@@ -1,6 +1,6 @@
 import prisma from "../config/client";
-import { notificationsOptions, RequestOptions, searchOptions, UserUpdate } from "./interfaces";
-import { followTypes, requestUsers } from "./types";
+import { CommentOptions, NotificationsOptions, PostOptions, RequestOptions, SearchOptions, UserUpdate } from "./interfaces";
+import { followTypes, likeActions, requestUsers } from "./types";
 
 const getUserByNameForSession = async function getUserFromDatabaseByUsername(
     username: string, pass = false
@@ -103,7 +103,7 @@ const clearAllMyNotifications = async function removeAllNotificationsOfUser(user
   return possibleUser;
 };
 
-const getSelfIconsInfo = async function getAllInfoFromUser(userid: string) {
+const getSelfIconsInfo = async function getAllIconsInfoFromUser(userid: string) {
   const userInfo = await prisma.user.findFirst({
     where: {
       id: userid,
@@ -284,7 +284,7 @@ const makeRequest = async function makeRequestByUser(options: RequestOptions) {
   return possibleRequest;
 };
 
-const createNotification = async function createNotificationForAction(options: notificationsOptions) {
+const createNotification = async function createNotificationForAction(options: NotificationsOptions) {
   const createdNotification = await prisma.notification.create({
     data: {
       createdAt: options.createdAt,
@@ -299,7 +299,7 @@ const createNotification = async function createNotificationForAction(options: n
   return createdNotification;
 };
 
-const getSomeUsers = async function getSomeUsersFromDatabase(options: searchOptions) {
+const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOptions) {
   const possibleUsers = prisma.user.findMany({
     ...(typeof options.username === "string" ? {
       where: {
@@ -464,6 +464,216 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string) {
   return myFeed;
 };
 
+const getImagesInPostForDelete = async function getAllImagesInPostForDeletePurposes(userid: string, postid: string) {
+  const allImages = await prisma.customImage.findMany({
+    where: {
+      OR: [
+      {
+        comment: {
+          AND: [
+            {
+              postid,
+            },
+            {
+              post:  
+                {
+                  creatorid: userid
+                }
+            }
+          ]
+        }
+      },
+      {
+        AND: [
+          {
+            postid,
+          },
+          {
+            post: {
+              creatorid: userid
+            }
+          }
+        ]
+      }
+    ]
+  }
+})
+
+  return allImages;
+};
+
+const deleteThisPost = async function deleteThisPostByUser(userid: string, postid: string) {
+  const deletedPost = await prisma.post.findFirst({
+    where: {
+      creatorid: userid,
+      id: postid
+    }
+  });
+
+  return deletedPost;
+};
+
+const createThisPost = async function createPostForUser(options: PostOptions) {
+  const createdPost = await prisma.post.create({
+    data: {
+      creator: {
+        connect: {
+          id: options.userid
+        }
+      },
+      createdAt: options.createdAt,
+      content: options.content,
+      ...(options.fileInfo ? {
+        image: {
+          create: {
+            url: options.fileInfo.secure_url,
+            public_id: options.fileInfo.public_id,
+            uploadAt: options.fileInfo.created_at,
+          }
+        }
+      }: {})
+    }
+  });
+
+  return createdPost;
+};
+
+const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
+  const possiblePost = await prisma.post.findFirst({
+    where: {
+      id: postid
+    },
+    include: {
+      image: {
+        select: {
+          url: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true
+        }
+      },
+      comments: {
+        where: {
+          comment: {
+            is: null
+          }
+        }
+      }
+    }
+  });
+
+  return possiblePost;
+};
+
+const fetchPostForCheck = async function fetchPostForUpdatingPurposes(userid: string, postid: string) {
+  const fetchedPost = await prisma.post.findFirst({
+    where: {
+      creatorid: userid,
+      id: postid
+    },
+    include: {
+      image: true
+    }
+  });
+
+  return fetchedPost;
+};
+
+const updatePostContent = async function updateContentOfSpecificPostByUser(userid: string, postid: string, content: string) {
+  const updatedPost = await prisma.post.update({
+    data: {
+      content
+    },
+    where: {
+      id: postid,
+      creatorid: userid,
+    }
+  });
+  
+  return updatedPost;
+};
+
+const changePostLike = async function changeLikeOfUserOnPost(userid: string, postid: string, action: likeActions) {
+  const changedPost = await prisma.user.update({
+    where: {
+      id: userid,
+    },
+    data: {
+      likedPosts: {
+        [action]: {
+          id: postid
+        }
+      }
+    }
+  });
+
+  return changedPost;
+};
+
+const createThisComment = async function createCommentOnPostAndOrComment(options: PostOptions & CommentOptions) {
+  const updatedPost = await prisma.post.update({
+    data: {
+      comments: {
+        create: {
+          content: options.content,
+          sentAt: options.createdAt,
+          sender: {
+            connect: {
+              id: options.userid
+            }
+          },
+          ...(typeof options.commentid === "string" 
+            ? 
+            {
+              comment: {
+                connect: {
+                  id: options.commentid
+                }
+              }
+            }
+            : {}),
+          ...(options.fileInfo ? {
+            image: {
+              create: {
+                url: options.fileInfo.secure_url,
+                public_id: options.fileInfo.public_id,
+                uploadAt: options.fileInfo.created_at,
+              }
+            }
+          }: {})
+        }
+      }
+
+    },
+    where: {
+      id: options.postid,
+      ...(typeof options.commentid === "string"
+        ? 
+        {
+          comments: {
+            some: {
+              id: options.commentid
+            }
+          }
+        }
+        : {}
+      )
+    },
+    include: {
+      comments: {
+        orderBy: {
+          sentAt: "desc"
+        },
+        take: 1,
+      }
+    }
+  });
+
+  return updatedPost;
+};
+
 export {
   getUserByNameForSession,
   getUserForSession,
@@ -487,4 +697,12 @@ export {
   getThisUserPosts,
   getMyFollowships,
   getUserFeed,
+  getImagesInPostForDelete,
+  deleteThisPost,
+  createThisPost,
+  getThisPost,
+  fetchPostForCheck,
+  updatePostContent,
+  changePostLike,
+  createThisComment,
 };

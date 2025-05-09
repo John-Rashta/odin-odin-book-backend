@@ -54,7 +54,26 @@ const validateUUID = (fieldname: string) => {
     .custom((value) => {
       return isUUID(value) || isAlphanumeric(value);
     }),
-  ]
+  ];
+
+  const validatePost = [
+    body("content")
+    .optional({values: "falsy"})
+    .notEmpty()
+    .isString()
+  ];
+
+  const validateLikeType = [
+    body("action")
+      .isIn(["ADD", "REMOVE"])
+      .withMessage("Must be a valid action."),
+  ];
+
+  const validateCommentQuery =  [
+    query("comment")
+      .isUUID()
+      .withMessage("Must be an UUID.")
+  ];
 
 export {
     validateCredentials,
@@ -63,4 +82,7 @@ export {
     validateUserProfile,
     validateRequest,
     validateSearch,
+    validatePost,
+    validateLikeType,
+    validateCommentQuery,
 };

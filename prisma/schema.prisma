@@ -50,8 +50,8 @@ model Comment {
   id String @id @default(uuid())
   content String
   sentAt DateTime
-  post Post? @relation(fields: [postid], references: [id], onDelete: Cascade)
-  postid String? @unique
+  post Post @relation(fields: [postid], references: [id], onDelete: Cascade)
+  postid String @unique
   comment Comment? @relation("myComments", fields: [commentid], references: [id], onDelete: Cascade)
   commentid String?
   ownComments Comment[] @relation("myComments")

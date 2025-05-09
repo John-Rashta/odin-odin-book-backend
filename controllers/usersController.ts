@@ -235,23 +235,6 @@ const getUserPosts = asyncHandler(async (req, res) => {
   return;
 });
 
-const getMyPosts = asyncHandler(async (req, res) => {
-  if (!req.user) {
-    res.status(400).json();
-    return;
-  };
-
-  const myPosts = await getThisUserPosts(req.user.id);
-
-  if (!myPosts) {
-    res.status(500).json({message: "Internal Error"});
-    return;
-  };
-
-  res.status(200).json({posts: myPosts});
-  return;
-});
-
 const getMyFeed = asyncHandler(async (req, res) => {
   if (!req.user) {
     res.status(400).json();
@@ -277,7 +260,6 @@ export {
     getUser,
     getMyFollowers,
     getMyFollows,
-    getMyPosts,
     getUserPosts,
     getMyFeed,
 };

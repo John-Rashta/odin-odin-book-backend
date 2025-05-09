@@ -4,7 +4,7 @@ import { upload } from "../middleware/uploadMiddleware";
 import { validateOptionalCredentials, validateSearch, validateUserProfile, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { multerErrorMiddleware } from "../middleware/multerErrorMiddleware";
-import { getMyFeed, getMyFollowers, getMyFollows, getMyInfo, getMyPosts, getUser, getUserPosts, getUsers, stopFollowing, updateMyself } from "../controllers/usersController";
+import { getMyFeed, getMyFollowers, getMyFollows, getMyInfo, getUser, getUserPosts, getUsers, stopFollowing, updateMyself } from "../controllers/usersController";
 
 const usersRoute = Router();
 
@@ -32,12 +32,6 @@ usersRoute.get(
     "/self/follows",
     isAuth,
     getMyFollows,
-);
-
-usersRoute.get(
-    "/self/posts",
-    isAuth,
-    getMyPosts,
 );
 
 usersRoute.get(
