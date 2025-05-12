@@ -937,6 +937,23 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
   return commentData;
 };
 
+const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: string) {
+  const allFollows = await prisma.user.findMany({
+    where: {
+      followers: {
+        some: {
+          id: userid
+        }
+      }
+    },
+    select: {
+      id: true
+    }
+  });
+
+  return allFollows;
+};
+
 export {
   getUserByNameForSession,
   getUserForSession,
@@ -973,4 +990,5 @@ export {
   deleteThisComment,
   changeCommentLike,
   getThisComment,
+  getAllFollowsForIo,
 };

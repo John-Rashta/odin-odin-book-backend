@@ -44,6 +44,7 @@ const sessionStuff = session({
 app.use(sessionStuff);
 
 import "./config/passport";
+import { getAllFollowsForIo } from "./util/queries";
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -85,11 +86,17 @@ function onlyForHandshake(
 io.engine.use(onlyForHandshake(sessionStuff));
 io.engine.use(onlyForHandshake(passport.session()));
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const req = socket.request as Request & { user: Express.User };
 
   if (req.user) {
     socket.join(`self-${req.user.id}`);
+    const currentFollows = await getAllFollowsForIo(req.user.id);
+    if (currentFollows) {
+      currentFollows.forEach((val) => {
+        socket.join(`user-${val.id}`);
+      });
+    };
   };
 
   ///socket.join(`session:${req.session.id}`);
