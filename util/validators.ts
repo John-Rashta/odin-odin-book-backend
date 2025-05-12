@@ -75,6 +75,13 @@ const validateUUID = (fieldname: string) => {
       .withMessage("Must be an UUID.")
   ];
 
+  const validateUpdateContent = [
+    body("content")
+      .notEmpty()
+      .isString()
+      .withMessage("Can't be empty and must be text.")
+  ];
+
 export {
     validateCredentials,
     validateUUID,
@@ -85,4 +92,5 @@ export {
     validatePost,
     validateLikeType,
     validateCommentQuery,
+    validateUpdateContent,
 };

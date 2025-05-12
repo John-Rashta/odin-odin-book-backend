@@ -130,7 +130,9 @@ const getMyInfo = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({user: myInfo})
+  const { _count, ...rest } = myInfo;
+
+  res.status(200).json({user: {...rest, followerCount: _count.followers}});
   return;
 });
 
@@ -144,8 +146,10 @@ const getUsers = asyncHandler(async (req, res) => {
         res.status(400).json({message: "User not found."});
         return;
       };
+
+      const {_count, ...rest } = possibleUser;
   
-      res.status(200).json({user: [possibleUser]});
+      res.status(200).json({user: [{...rest, followerCount: _count.followers}]});
       return;
     };
   
@@ -183,7 +187,9 @@ const getUser = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({user: possibleUser});
+  const {_count, ...rest } = possibleUser;
+
+  res.status(200).json({user: {...rest, followerCount: _count.followers}});
   return;
 });
 
@@ -231,7 +237,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({posts: allPosts});
+  res.status(200).json({posts: allPosts.map(({_count, ...val}) => ({...val, likes: _count.likes})) });
   return;
 });
 
@@ -248,7 +254,7 @@ const getMyFeed = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({feed: myFeed});
+  res.status(200).json({feed: myFeed.map(({_count, ...val }) => ({...val, likes: _count.likes}))});
   return;
 });
 

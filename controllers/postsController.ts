@@ -16,7 +16,7 @@ const getMyPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({posts: myPosts});
+  res.status(200).json({posts: myPosts.map(({_count, ...val}) => ({ ...val, likes: _count.likes }))});
   return;
 });
 
@@ -85,9 +85,15 @@ const getPost = asyncHandler(async (req, res) => {
         return;
     };
 
-    const { _count,...restPost} = possiblePost;
+    const { _count, ...restPost} = possiblePost;
 
-    res.status(200).json({post: {...restPost, likes: _count.likes}});
+    res.status(200).json({post: 
+        {
+            ...restPost, 
+            likes: _count.likes,
+            comments: possiblePost.comments.map(({_count, ...val}) => ({...val, likes: _count.likes}))
+        }
+    });
     return;
 });
 

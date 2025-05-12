@@ -43,6 +43,7 @@ model Post {
   creatorid String @unique
   likes User[] @relation("postLikes")
   comments Comment[]
+  edited Boolean @default(false)
 
 }
 
@@ -52,13 +53,14 @@ model Comment {
   sentAt DateTime
   post Post @relation(fields: [postid], references: [id], onDelete: Cascade)
   postid String @unique
-  comment Comment? @relation("myComments", fields: [commentid], references: [id], onDelete: Cascade)
+  comment Comment? @relation("myComments", fields: [commentid], references: [id])
   commentid String?
   ownComments Comment[] @relation("myComments")
   image CustomImage?
   sender User @relation("ownComment", fields: [senderid], references: [id], onDelete: Cascade)
   senderid String
   likes User[] @relation("likedComment")
+  edited Boolean @default(false)
 }
 
 model Icon {

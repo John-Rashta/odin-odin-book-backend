@@ -176,10 +176,18 @@ const changeUserInfo = async function updateUserDetails(
     select: {
       id: true,
       joinedAt: true,
-      icon: true,
+      icon: {
+        select: {
+          source: true
+        }
+      },
       username: true,
       aboutMe: true,
-      customIcon: true,
+      customIcon: {
+        select: {
+          url: true
+        }
+      },
     },
   });
 
@@ -193,6 +201,14 @@ const getUserReceivedRequests = async function getAllReceivedRequestsOfUser(user
     },
     orderBy: {
       sentAt: "desc"
+    },
+    include: {
+      sender: {
+        select: {
+          username: true,
+          id: true,
+        }
+      }
     }
   });
 
@@ -206,6 +222,14 @@ const getUserSentRequests = async function getAllSentRequestsByUser(userid: stri
     },
     orderBy: {
       sentAt: "desc"
+    },
+    include: {
+      target: {
+        select: {
+          username: true,
+          id: true,
+        }
+      }
     }
   });
 
@@ -311,26 +335,36 @@ const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOpti
     orderBy: {
       username: "asc"
     },
-    ...(typeof options.userid === "string" ? {
-      include: {
-        receivedRequests: {
-          where: {
-            id: options.userid
+    include: {
+        ...(typeof options.userid === "string" ? {
+          receivedRequests: {
+            where: {
+              id: options.userid
+            },
+            select: {
+              id: true,
+            },
           },
-          select: {
-            id: true,
-          },
-        },
-        followers: {
-          where: {
-            id: options.userid
-          },
-          select: {
-            id: true,
-          },
+          followers: {
+            where: {
+              id: options.userid
+            },
+            select: {
+              id: true,
+            },
+          }
+      } : {}),
+      icon: {
+        select: {
+          source: true
+        }
+      },
+      customIcon: {
+        select: {
+          url: true,
         }
       }
-    } : {}),
+    },
     omit: {
       password: true,
     },
@@ -359,14 +393,9 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
       customIcon: {
         select: {
           url: true,
+        },
       },
-      }
-    },
-    omit: {
-      password: true
-    },
-    ...(typeof myId === "string" ? {
-      include: {
+      ...(typeof myId === "string" ? {
         receivedRequests: {
           where: {
             id: myId
@@ -382,11 +411,14 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
           select: {
             id: true,
           },
-        }
       }
-    } : {}),
+      } : {}),
+    },
+    omit: {
+      password: true
+    },
   });
-
+  
   return possibleUser;
 };
 
@@ -394,6 +426,34 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string) {
   const possiblePosts = await prisma.post.findMany({
     where: {
       creatorid: userid
+    },
+    include: {
+      _count: {
+        select: {
+          likes: true
+        }
+      },
+      image: {
+        select: {
+          url: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true,
+            },
+          },
+        }
+      }
     },
     orderBy: {
       createdAt: "desc"
@@ -453,6 +513,27 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string) {
         select: {
           url: true
         }
+      },
+      _count: {
+        select: {
+          likes: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true,
+            }
+          }
+        }
       }
     },
     orderBy: {
@@ -503,7 +584,7 @@ const getImagesInPostForDelete = async function getAllImagesInPostForDeletePurpo
 };
 
 const deleteThisPost = async function deleteThisPostByUser(userid: string, postid: string) {
-  const deletedPost = await prisma.post.findFirst({
+  const deletedPost = await prisma.post.delete({
     where: {
       creatorid: userid,
       id: postid
@@ -559,7 +640,51 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
           comment: {
             is: null
           }
+        },
+        include: {
+          image: {
+            select: {
+              url: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true
+            }
+          },
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              icon: {
+                select: {
+                  source: true,
+                }
+              },
+              customIcon: {
+                select: {
+                  url: true,
+                }
+              }
+            }
+          }
         }
+      },
+      creator: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true
+            }
+          }
+        },
       }
     }
   });
@@ -584,12 +709,13 @@ const fetchPostForCheck = async function fetchPostForUpdatingPurposes(userid: st
 const updatePostContent = async function updateContentOfSpecificPostByUser(userid: string, postid: string, content: string) {
   const updatedPost = await prisma.post.update({
     data: {
-      content
+      content,
+      edited: true,
     },
     where: {
       id: postid,
       creatorid: userid,
-    }
+    },
   });
   
   return updatedPost;
@@ -606,6 +732,9 @@ const changePostLike = async function changeLikeOfUserOnPost(userid: string, pos
           id: postid
         }
       }
+    },
+    omit: {
+      password: true
     }
   });
 
@@ -674,6 +803,140 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
   return updatedPost;
 };
 
+const fetchCommentForCheck = async function fetchCommentForUpdatingPurposes(userid: string, commentid: string) {
+  const possibleComment = await prisma.comment.findFirst({
+    where: {
+      id: commentid,
+      senderid: userid
+    },
+    include: {
+      image: {
+        select: {
+          id: true
+        }
+      }
+    }
+  });
+
+  return possibleComment;
+};
+
+const updateThisComment = async function updateCommentByUser(userid: string, commentid: string, content: string) {
+  const updatedComment = await prisma.comment.update({
+    where: {
+      id: commentid,
+      senderid: userid
+    },
+    data: {
+      content,
+      edited: true
+    }
+  })
+  return updatedComment;
+};
+
+const deleteThisComment = async function deleteCommentByUser(userid: string, commentid: string) {
+  const deletedComment = await prisma.comment.delete({
+    where: {
+      id: commentid,
+      senderid: userid,
+    },
+    include: {
+      image: true
+    }
+  });
+
+  return deletedComment;
+};
+
+const changeCommentLike = async function changeLikeOfUserOnComment(userid: string, commentid: string, action: likeActions) {
+const changedComment = await prisma.user.update({
+    where: {
+      id: userid,
+    },
+    data: {
+      likedComments: {
+        [action]: {
+          id: commentid
+        }
+      }
+    },
+    omit: {
+      password: true
+    }
+  });
+
+  return changedComment;
+};
+
+const getThisComment = async function getCommentAndItsChildren(commentid: string) {
+  const commentData = await prisma.comment.findFirst({
+    where: {
+      id: commentid
+    },
+    include: {
+      image: {
+        select: {
+          url: true,
+        }
+      },
+      _count: {
+        select: {
+          likes: true
+        }
+      },
+      sender: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true
+            }
+          },
+          customIcon:  {
+            select: {
+              url: true,
+            }
+          }
+        }
+      },
+      ownComments: {
+        include: {
+          _count: {
+            select: {
+              likes: true
+            }
+          },
+          image: {
+            select: {
+              url: true
+            }
+          },
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              icon: {
+                select: {
+                  source: true,
+                }
+              },
+              customIcon: {
+                select: {
+                  url: true,
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return commentData;
+};
+
 export {
   getUserByNameForSession,
   getUserForSession,
@@ -705,4 +968,9 @@ export {
   updatePostContent,
   changePostLike,
   createThisComment,
+  fetchCommentForCheck,
+  updateThisComment,
+  deleteThisComment,
+  changeCommentLike,
+  getThisComment,
 };

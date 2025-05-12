@@ -13,6 +13,8 @@ import authRoute from "./routes/authRoute";
 import usersRoute from "./routes/usersRoute";
 import notificationsRoute from "./routes/notificationsRoute";
 import requestsRoute from "./routes/requestsRoute";
+import postsRoute from "./routes/postsRoute";
+import commentsRoute from "./routes/commentsRoute";
 
 const PORT = 3000;
 
@@ -57,6 +59,8 @@ app.use("/auth",authRoute);
 app.use("/users", usersRoute);
 app.use("/notifications", notificationsRoute);
 app.use("/requests", requestsRoute);
+app.use("/posts", postsRoute);
+app.use("/comments", commentsRoute);
 
 app.use(errorHandler);
 
