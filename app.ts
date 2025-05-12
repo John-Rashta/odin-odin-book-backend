@@ -97,6 +97,10 @@ io.on("connection", async (socket) => {
         socket.join(`user-${val.id}`);
       });
     };
+    socket.on("subscribe", (val) => {
+      ///placeholder
+      console.log(val);
+    })
   };
 });
 
