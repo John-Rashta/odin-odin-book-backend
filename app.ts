@@ -98,9 +98,6 @@ io.on("connection", async (socket) => {
       });
     };
   };
-
-  ///socket.join(`session:${req.session.id}`);
-  ///socket.join(`user:${req.user.id}`);
 });
 
 httpServer.listen(PORT, () => {

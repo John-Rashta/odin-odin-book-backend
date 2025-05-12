@@ -457,7 +457,8 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string) {
     },
     orderBy: {
       createdAt: "desc"
-    }
+    },
+    take: 30
   });
   return possiblePosts;
 };
@@ -636,6 +637,7 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
         }
       },
       comments: {
+        take: 30,
         where: {
           comment: {
             is: null
@@ -902,6 +904,7 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
         }
       },
       ownComments: {
+        take: 30,
         include: {
           _count: {
             select: {
