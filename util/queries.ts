@@ -61,6 +61,9 @@ const getMyNotifications = async function getCurrentUserNotifications(userid: st
             id: userid
           }
         }
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     });
 
@@ -639,6 +642,9 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string, e
       },
       comments: {
         ...extra,
+        orderBy: {
+          sentAt: "desc"
+        },
         where: {
           comment: {
             is: null
@@ -907,6 +913,9 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
       },
       ownComments: {
         ...extra,
+        orderBy: {
+          sentAt: "desc"
+        },
         include: {
           _count: {
             select: {
