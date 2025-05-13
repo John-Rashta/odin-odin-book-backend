@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isAuth } from "../middleware/authMiddleware";
-import { validateUpdateContent, validateUUID } from "../util/validators";
+import { validateDataQuery, validateUpdateContent, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { changeLike, deleteComment, getComment, updateComment } from "../controllers/commentsController";
 
@@ -36,6 +36,7 @@ commentsRoute.get(
     "/:id",
     isAuth,
     validateUUID("id"),
+    validateDataQuery,
     validationErrorMiddleware,
     getComment,
 );

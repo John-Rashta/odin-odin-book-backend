@@ -1,5 +1,5 @@
 import prisma from "../config/client";
-import { CommentOptions, NotificationsOptions, PostOptions, RequestOptions, SearchOptions, UserUpdate } from "./interfaces";
+import { CommentOptions, NotificationsOptions, PostOptions, RequestOptions, SearchOptions, TakeAndSkip, UserUpdate } from "./interfaces";
 import { followTypes, likeActions, requestUsers } from "./types";
 
 const getUserByNameForSession = async function getUserFromDatabaseByUsername(
@@ -323,7 +323,7 @@ const createNotification = async function createNotificationForAction(options: N
   return createdNotification;
 };
 
-const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOptions) {
+const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOptions, extra: TakeAndSkip) {
   const possibleUsers = prisma.user.findMany({
     ...(typeof options.username === "string" ? {
       where: {
@@ -368,7 +368,7 @@ const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOpti
     omit: {
       password: true,
     },
-    take: 30,
+    ...extra
   });
 
   return possibleUsers;
@@ -422,7 +422,7 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
   return possibleUser;
 };
 
-const getThisUserPosts = async function getAllOfUserPosts(userid: string) {
+const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra: TakeAndSkip) {
   const possiblePosts = await prisma.post.findMany({
     where: {
       creatorid: userid
@@ -458,12 +458,12 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string) {
     orderBy: {
       createdAt: "desc"
     },
-    take: 30
+    ...extra
   });
   return possiblePosts;
 };
 
-const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes) {
+const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes, extra: TakeAndSkip) {
   const possibleFollowers = await prisma.user.findMany({
     where: {
       [type]: {
@@ -485,13 +485,14 @@ const getMyFollowships = async function getAllOfUserFollowships(userid: string, 
           url: true,
         }
       }
-    }
+    },
+    ...extra
   });
 
   return possibleFollowers;
 };
 
-const getUserFeed = async function getSomeOfUserFeed(userid: string) {
+const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: TakeAndSkip) {
   const myFeed = await prisma.post.findMany({
     where: {
       creator: {
@@ -540,7 +541,7 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string) {
     orderBy: {
       createdAt: "desc"
     },
-    take: 30,
+    ...extra,
   });
 
   return myFeed;
@@ -620,7 +621,7 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
   return createdPost;
 };
 
-const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
+const getThisPost = async function getSpecificPostFromDatabase(postid: string, extra: TakeAndSkip) {
   const possiblePost = await prisma.post.findFirst({
     where: {
       id: postid
@@ -637,7 +638,7 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
         }
       },
       comments: {
-        take: 30,
+        ...extra,
         where: {
           comment: {
             is: null
@@ -651,7 +652,8 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
           },
           _count: {
             select: {
-              likes: true
+              likes: true,
+              ownComments: true,
             }
           },
           sender: {
@@ -871,7 +873,7 @@ const changedComment = await prisma.user.update({
   return changedComment;
 };
 
-const getThisComment = async function getCommentAndItsChildren(commentid: string) {
+const getThisComment = async function getCommentAndItsChildren(commentid: string, extra: TakeAndSkip) {
   const commentData = await prisma.comment.findFirst({
     where: {
       id: commentid
@@ -904,11 +906,12 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
         }
       },
       ownComments: {
-        take: 30,
+        ...extra,
         include: {
           _count: {
             select: {
-              likes: true
+              likes: true,
+              ownComments: true
             }
           },
           image: {

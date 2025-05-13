@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { isAuth } from "../middleware/authMiddleware";
 import { upload } from "../middleware/uploadMiddleware";
-import { validateOptionalCredentials, validateSearch, validateUserProfile, validateUUID } from "../util/validators";
+import { validateDataQuery, validateOptionalCredentials, validateSearch, validateUserProfile, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { multerErrorMiddleware } from "../middleware/multerErrorMiddleware";
 import { getMyFeed, getMyFollowers, getMyFollows, getMyInfo, getUser, getUserPosts, getUsers, stopFollowing, updateMyself } from "../controllers/usersController";
@@ -12,6 +12,7 @@ usersRoute.get(
     "/",
     isAuth,
     validateSearch,
+    validateDataQuery,
     validationErrorMiddleware,
     getUsers,
 );
@@ -25,18 +26,24 @@ usersRoute.get(
 usersRoute.get(
     "/self/followers",
     isAuth,
+    validateDataQuery,
+    validationErrorMiddleware,
     getMyFollowers,
 );
 
 usersRoute.get(
     "/self/follows",
     isAuth,
+    validateDataQuery,
+    validationErrorMiddleware,
     getMyFollows,
 );
 
 usersRoute.get(
     "/self/feed",
     isAuth,
+    validateDataQuery,
+    validationErrorMiddleware,
     getMyFeed,
 );
 
@@ -50,6 +57,7 @@ usersRoute.get(
 usersRoute.get(
     "/:id/posts",
     validateUUID("id"),
+    validateDataQuery,
     validationErrorMiddleware,
     getUserPosts,
 );

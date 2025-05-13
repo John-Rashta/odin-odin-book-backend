@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateCommentQuery, validateLikeType, validatePost, validateUpdateContent, validateUUID } from "../util/validators";
+import { validateCommentQuery, validateDataQuery, validateLikeType, validatePost, validateUpdateContent, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { changeLike, createPost, deletePost, getMyPosts, getPost, postComment, updatePost } from "../controllers/postsController";
 import { isAuth } from "../middleware/authMiddleware";
@@ -11,6 +11,8 @@ const postsRoute = Router();
 postsRoute.get(
     "/",
     isAuth,
+    validateDataQuery,
+    validationErrorMiddleware,
     getMyPosts,
 );
 
@@ -18,6 +20,7 @@ postsRoute.get(
     "/:id",
     isAuth,
     validateUUID("id"),
+    validateDataQuery,
     validationErrorMiddleware,
     getPost,
 );

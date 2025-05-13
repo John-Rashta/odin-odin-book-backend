@@ -47,6 +47,11 @@ interface CommentOptions {
     postid: string
 };
 
+interface TakeAndSkip {
+    take: number,
+    skip: number,
+}
+
 export {
     RequestOptions,
     UserOptions,
@@ -56,4 +61,5 @@ export {
     SearchOptions,
     PostOptions,
     CommentOptions,
+    TakeAndSkip,
 };

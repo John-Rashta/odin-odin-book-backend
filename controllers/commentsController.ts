@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
 import { changeCommentLike, deleteThisComment, fetchCommentForCheck, getThisComment, updateThisComment } from "../util/queries";
 import { deleteFiles } from "../util/helperFunctions";
+import { getTakeAndSkip } from "../util/dataHelpers";
 
 const updateComment = asyncHandler(async (req, res) => {
     if (!req.user) {
@@ -53,7 +54,7 @@ const deleteComment  = asyncHandler(async (req, res) => {
 const getComment = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const foundComment = await getThisComment(formData.id);
+    const foundComment = await getThisComment(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
     if (!foundComment) {
         res.status(400).json({message: "Comment not found."});
@@ -63,7 +64,7 @@ const getComment = asyncHandler(async (req, res) => {
     const {_count, ownComments, ...rest} = foundComment;
 
     res.status(200).json({comment: {...rest, likes: _count.likes, 
-        ownComments: ownComments.map(({_count, ...val}) => ({...val, likes: _count.likes}))}});
+        ownComments: ownComments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))}});
     return;
 });
 

@@ -82,6 +82,17 @@ const validateUUID = (fieldname: string) => {
       .withMessage("Can't be empty and must be text.")
   ];
 
+  const validateDataQuery = [
+    query("amount")
+      .optional({values: "falsy"})
+      .isInt()
+      .withMessage("Must be an integer."),
+    query("skip")
+      .optional({values: "falsy"})
+      .isInt()
+      .withMessage("Must be an integer.")
+  ]
+
 export {
     validateCredentials,
     validateUUID,
@@ -93,4 +104,5 @@ export {
     validateLikeType,
     validateCommentQuery,
     validateUpdateContent,
+    validateDataQuery,
 };

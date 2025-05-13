@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { changePostLike, createThisComment, createThisPost, deleteThisPost, fetchPostForCheck, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
+import { getTakeAndSkip } from "../util/dataHelpers";
 
 const getMyPosts = asyncHandler(async (req, res) => {
   if (!req.user) {
@@ -9,7 +10,9 @@ const getMyPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  const myPosts = await getThisUserPosts(req.user.id);
+  const formData = matchedData(req);
+
+  const myPosts = await getThisUserPosts(req.user.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myPosts) {
     res.status(500).json({message: "Internal Error"});
@@ -78,7 +81,7 @@ const deletePost = asyncHandler(async (req, res) => {
 const getPost = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const possiblePost = await getThisPost(formData.id);
+    const possiblePost = await getThisPost(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
     if (!possiblePost) {
         res.status(400).json({message: "Post not found."});
@@ -91,7 +94,7 @@ const getPost = asyncHandler(async (req, res) => {
         {
             ...restPost, 
             likes: _count.likes,
-            comments: possiblePost.comments.map(({_count, ...val}) => ({...val, likes: _count.likes}))
+            comments: possiblePost.comments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))
         }
     });
     return;

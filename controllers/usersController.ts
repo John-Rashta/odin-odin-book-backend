@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { getUserByNameForSession, getUserForSession, getSelfIconsInfo, getIconInfo, deleteCustomIcon, changeUserInfo, stopFollowship, getThisUser, getSomeUsers, getMyFollowships, getThisUserPosts, getUserFeed } from "../util/queries";
 import { matchedData } from "express-validator";
 import { isUUID } from "validator";
+import { getTakeAndSkip } from "../util/dataHelpers";
 
 const updateMyself = asyncHandler(async (req, res) => {
     if (!req.user) {
@@ -155,7 +156,7 @@ const getUsers = asyncHandler(async (req, res) => {
   
     const possibleUsers = await getSomeUsers({
       username: formData.user, userid: req.user?.id || undefined
-    });
+    }, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
   
     if (!possibleUsers) {
       res.status(500).json({message: "Internal Error"});
@@ -166,7 +167,9 @@ const getUsers = asyncHandler(async (req, res) => {
     return;
   }
 
-  const possibleUsers = await getSomeUsers({userid: req.user?.id || undefined });
+  const possibleUsers = await getSomeUsers({userid: req.user?.id || undefined },
+    getTakeAndSkip({amount: formData.amount, skip: formData.skip})
+  );
 
   if (!possibleUsers) {
     res.status(500).json({message: "Internal Error"});
@@ -199,7 +202,9 @@ const getMyFollowers = asyncHandler(async (req, res) => {
     return;
   };
 
-  const myFollowers = await getMyFollowships(req.user.id, "followers");
+  const formData = matchedData(req);
+
+  const myFollowers = await getMyFollowships(req.user.id, "followers", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myFollowers) {
     res.status(500).json({message: "Internal Error"});
@@ -216,7 +221,9 @@ const getMyFollows = asyncHandler(async (req, res) => {
     return;
   };
 
-  const myFollows = await getMyFollowships(req.user.id, "follows");
+  const formData = matchedData(req);
+
+  const myFollows = await getMyFollowships(req.user.id, "follows", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myFollows) {
     res.status(500).json({message: "Internal Error"});
@@ -230,7 +237,7 @@ const getMyFollows = asyncHandler(async (req, res) => {
 const getUserPosts = asyncHandler(async (req, res) => {
   const formData = matchedData(req);
 
-  const allPosts = await getThisUserPosts(formData.id);
+  const allPosts = await getThisUserPosts(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!allPosts) {
     res.status(400).json({message: "User not found."});
@@ -247,7 +254,9 @@ const getMyFeed = asyncHandler(async (req, res) => {
     return;
   };
 
-  const myFeed = await getUserFeed(req.user.id);
+  const formData = matchedData(req);
+
+  const myFeed = await getUserFeed(req.user.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myFeed) {
     res.status(500).json({message: "Internal Error"});
