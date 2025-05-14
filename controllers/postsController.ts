@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { changePostLike, createThisComment, createThisPost, deleteThisPost, fetchPostForCheck, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
+import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, fetchPostForCheck, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
@@ -55,6 +55,22 @@ const createPost = asyncHandler(async (req, res) => {
         return;
     };
 
+    const getFollows = await getAllFollowsForIo(req.user.id);
+
+    const createdNotification = await createNotification(
+        {
+        createdAt: createdPost.createdAt,
+        content: `Check ${req.user.username} new Post!`,
+        type: "POST",
+        typeid: createdPost.id,
+        usersid: getFollows.map((val) => val.id)
+        }
+    );
+
+    if (createdNotification && req.io) {
+        req.io.to(`user-${req.user.id}`).emit("extra-notifications", {notification: createdNotification, id: req.user.id});
+    };
+
     res.status(200).json({postid: createdPost.id});
     return;
 });
@@ -74,6 +90,10 @@ const deletePost = asyncHandler(async (req, res) => {
     };
 
     await deleteThisPost(req.user.id, formData.id);
+
+    if (req.io) {
+        req.io.to(`user-${req.user.id}`).emit("delete-post", {id: formData.id});
+    }
     res.status(200).json();
     return;
 });
@@ -124,6 +144,10 @@ const updatePost = asyncHandler(async (req, res) => {
         return;
     };
 
+    if (req.io) {
+        req.io.to(`post-${updatedPost.id}`).emit("post-update", {type: "content",id: updatedPost.id, content: updatedPost.content})
+    }
+
     res.status(200).json();
     return;
 });
@@ -141,6 +165,10 @@ const changeLike = asyncHandler(async (req, res) => {
     if (!changedPost) {
         res.status(400).json({message: "Post not found."});
         return;
+    };
+
+    if (req.io) {
+        req.io.to(`post-${changedPost.id}`).emit("post-update", {type: "likes", newCount: changedPost._count.likes, id: changedPost.id})
     };
 
     res.status(200).json();
@@ -180,7 +208,28 @@ const postComment = asyncHandler(async (req, res) => {
         return;
     };
     
-    res.status(200).json();
+    const {_count, comment, ...noCountComment } = updatedPost.comments[0];
+    const properComment = {...noCountComment, likes: _count.likes, ownCommentsCount: _count.ownComments};
+
+    let newNotification;
+
+    if (comment) {
+        newNotification = await createNotification({
+            createdAt: noCountComment.sentAt,
+            content: `${req.user.username} responded to your comment!`,
+            type: "COMMENT",
+            typeid: comment.id,
+            usersid: [comment.sender.id]
+        });
+    };
+
+    if (req.io) {
+        req.io.to(`post-${updatedPost.id}-comments`).emit("newComment", {id: updatedPost.id, comment: properComment});
+        if (newNotification && comment) {
+            req.io.to(`self-${comment.sender.id}`).emit("notifications", {notification: newNotification});
+        }
+    };
+    res.status(200).json({comment: properComment});
 })
 
 

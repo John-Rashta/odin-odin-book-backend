@@ -176,22 +176,21 @@ const changeUserInfo = async function updateUserDetails(
           }
         : {}),
     },
-    select: {
-      id: true,
-      joinedAt: true,
+    include: {
       icon: {
         select: {
           source: true
         }
       },
-      username: true,
-      aboutMe: true,
       customIcon: {
         select: {
           url: true
         }
       },
     },
+    omit: {
+      password: true
+    }
   });
 
   return updatedUser;
@@ -261,20 +260,36 @@ const deleteThisRequest = async function deleteRequestWhereUserIsPresent(userid:
   return possibleRequest;
 };
 
-const createFollowship = async function makeUserFollowAnotherUser(userid: string, targetid: string) {
+const createFollowship = async function makeUserFollowAnotherUser(senderid: string, targetid: string) {
   const possibleUser = await prisma.user.update({
     where: {
-      id: userid
+      id: targetid
     },
     data: {
-      follows: {
+      followers: {
         connect: {
-          id: targetid
+          id: senderid
         }
       }
     },
-    omit: {
-      password: true
+  select: {
+      _count: {
+        select: {
+          followers: true
+        }
+      },
+      username: true,
+      id: true,
+      icon: {
+        select: {
+          source: true
+        }
+      },
+      customIcon: {
+        select: {
+          url: true
+        }
+      }
     }
   });
 
@@ -284,18 +299,25 @@ const createFollowship = async function makeUserFollowAnotherUser(userid: string
 const stopFollowship = async function makeUserStopFollowAnotherUser(userid: string, targetid: string) {
   const possibleUser = await prisma.user.update({
     where: {
-      id: userid
+      id: targetid
     },
     data: {
-      follows: {
+      followers: {
         disconnect: {
-          id: targetid
+          id: userid
         }
       }
     },
     omit: {
       password: true
     },
+    include: {
+      _count: {
+        select: {
+          followers: true
+        }
+      }
+    }
   });
 
   return possibleUser;
@@ -305,6 +327,14 @@ const makeRequest = async function makeRequestByUser(options: RequestOptions) {
   const possibleRequest = await prisma.request.create({
     data: {
       ...options
+    },
+    include: {
+      sender: {
+        select: {
+          username: true,
+          id: true,
+        }
+      },
     }
   });
 
@@ -342,7 +372,7 @@ const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOpti
         ...(typeof options.userid === "string" ? {
           receivedRequests: {
             where: {
-              id: options.userid
+              senderid: options.userid
             },
             select: {
               id: true,
@@ -401,7 +431,7 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
       ...(typeof myId === "string" ? {
         receivedRequests: {
           where: {
-            id: myId
+            senderid: myId
           },
           select: {
             id: true,
@@ -732,19 +762,23 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
 };
 
 const changePostLike = async function changeLikeOfUserOnPost(userid: string, postid: string, action: likeActions) {
-  const changedPost = await prisma.user.update({
+  const changedPost = await prisma.post.update({
     where: {
-      id: userid,
+      id: postid,
     },
     data: {
-      likedPosts: {
+      likes: {
         [action]: {
-          id: postid
+          id: userid
         }
       }
     },
-    omit: {
-      password: true
+    include: {
+      _count: {
+        select: {
+          likes: true
+        }
+      }
     }
   });
 
@@ -806,7 +840,46 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
           sentAt: "desc"
         },
         take: 1,
-      }
+        include: {
+          comment: {
+            select: {
+              sender: {
+                select: {
+                  id: true
+                }
+              },
+              id: true
+            }
+          },
+          image: {
+            select: {
+              url: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              ownComments: true,
+            }
+          },
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              icon: {
+                select: {
+                  source: true,
+                }
+              },
+              customIcon: {
+                select: {
+                  url: true,
+                }
+              }
+            }
+          }
+        },
+      },
     }
   });
 
@@ -840,7 +913,36 @@ const updateThisComment = async function updateCommentByUser(userid: string, com
     data: {
       content,
       edited: true
-    }
+    },
+    include: {
+          image: {
+            select: {
+              url: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              ownComments: true,
+            }
+          },
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              icon: {
+                select: {
+                  source: true,
+                }
+              },
+              customIcon: {
+                select: {
+                  url: true,
+                }
+              }
+            }
+          }
+        }
   })
   return updatedComment;
 };
@@ -860,19 +962,23 @@ const deleteThisComment = async function deleteCommentByUser(userid: string, com
 };
 
 const changeCommentLike = async function changeLikeOfUserOnComment(userid: string, commentid: string, action: likeActions) {
-const changedComment = await prisma.user.update({
+const changedComment = await prisma.comment.update({
     where: {
-      id: userid,
+      id: commentid,
     },
     data: {
-      likedComments: {
+      likes: {
         [action]: {
-          id: commentid
+          id: userid
         }
       }
     },
-    omit: {
-      password: true
+    include: {
+      _count: {
+        select: {
+          likes: true
+        }
+      }
     }
   });
 

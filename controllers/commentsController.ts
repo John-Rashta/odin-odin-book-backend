@@ -29,6 +29,13 @@ const updateComment = asyncHandler(async (req, res) => {
         return;
     };
 
+    const { _count, ...noCount } = updatedComment;
+    const properComment = {...noCount, likes: _count.likes, ownCommentsCount: _count.ownComments};
+
+    if (req.io) {
+        req.io.to(`post-${updatedComment.postid}-comments`).emit("comment-update",  {type: "comment", id: updatedComment.postid, comment: properComment})
+    }
+
     res.status(200).json();
     return;
 });
@@ -47,6 +54,9 @@ const deleteComment  = asyncHandler(async (req, res) => {
         await deleteFiles([deletedComment.image]);
     }
     
+    if (req.io) {
+        req.io.to(`post-${deletedComment.postid}-comments`).emit("delete-comment", {id: deletedComment.postid, commentid: deletedComment.id});
+    }
     res.status(200).json();
     return;
 });
@@ -83,6 +93,9 @@ const changeLike = asyncHandler(async (req, res) => {
         return;
     };
 
+    if (req.io) {
+        req.io.to(`post-${changedComment.postid}-comments`).emit("update-comment", {type:"likes", id: changedComment.postid, likes: changedComment._count.likes});
+    }
     res.status(200).json();
     return;
 });

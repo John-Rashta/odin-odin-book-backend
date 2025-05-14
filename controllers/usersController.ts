@@ -74,12 +74,15 @@ const updateMyself = asyncHandler(async (req, res) => {
             await deleteFiles([userInfo.customIcon]);
             await deleteCustomIcon(userInfo.customIcon.id);
           }
-          await changeUserInfo(req.user.id, {
+          const changedInfo = await changeUserInfo(req.user.id, {
             ...rest,
             password: hashedPassword,
             ...(req.file ? { customIcon: fileInfo } : {}),
           });
           await deleteLocalFile(req.file);
+          if (req.io) {
+            req.io.to(`user-${req.user.id}`).emit("user-update", {type: "user", data: changedInfo, id: req.user.id});
+          };
           res.status(200).json();
           return;
         }
@@ -90,10 +93,15 @@ const updateMyself = asyncHandler(async (req, res) => {
       await deleteFiles([userInfo.customIcon]);
       await deleteCustomIcon(userInfo.customIcon.id);
     }
-    await changeUserInfo(req.user.id, {
+    const changedInfo = await changeUserInfo(req.user.id, {
       ...formData,
       ...(req.file ? { customIcon: fileInfo } : {}),
     });
+
+    if (req.io) {
+            req.io.to(`user-${req.user.id}`).emit("user-update", {type: "user", data: changedInfo, id: req.user.id});
+          };
+   
     await deleteLocalFile(req.file);
     res.status(200).json();
     return;
@@ -113,6 +121,11 @@ const stopFollowing = asyncHandler(async (req, res) => {
     res.status(500).json({message: "Internal Error"});
     return;
   };
+
+  if (req.io) {
+    req.io.to(`self-${possibleUser.id}`).emit("followers", {action: "REMOVE", id: req.user.id});
+    req.io.to(`user-${possibleUser.id}`).emit("user-update", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
+  }
 
   res.status(200).json();
   return;

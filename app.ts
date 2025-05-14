@@ -15,6 +15,7 @@ import notificationsRoute from "./routes/notificationsRoute";
 import requestsRoute from "./routes/requestsRoute";
 import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
+import { getAllFollowsForIo } from "./util/queries";
 
 const PORT = 3000;
 
@@ -44,7 +45,7 @@ const sessionStuff = session({
 app.use(sessionStuff);
 
 import "./config/passport";
-import { getAllFollowsForIo } from "./util/queries";
+import { basicSchema } from "./util/socketValidator";
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -97,10 +98,44 @@ io.on("connection", async (socket) => {
         socket.join(`user-${val.id}`);
       });
     };
-    socket.on("subscribe", (val) => {
-      ///placeholder
-      console.log(val);
-    })
+
+    socket.on("post:join", (payload, callback) => {
+      if (typeof callback !== "function") {
+          return;
+      };
+      const { error, value } = basicSchema.validate(payload);
+      if (error) {
+        return callback({
+          error: error.name,
+          errorDetails: error.details,
+        });
+      };
+      socket.join(`post-${value.id}`);
+      if (value.comment === "yes") {
+        socket.join(`post-${value.id}-comments`);
+      };
+      return callback({
+            status: "OK",
+      });
+    });
+    socket.on("user:join", (payload, callback) => {
+      if (typeof callback !== "function") {
+        return;
+      };
+      const { error, value } = basicSchema.validate(payload);
+      if (error) {
+        return callback({
+          error: error.name,
+          errorDetails: error.details,
+        });
+      };
+
+      socket.join(`user-${value.id}`);
+      return callback({
+            status: "OK",
+      });
+    });
+
   };
 });
 

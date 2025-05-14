@@ -51,6 +51,14 @@ const deleteRequest = asyncHandler(async (req, res) => {
         return;
     };
 
+    if (req.io) {
+        if (req.user.id === deletedRequest.senderid) {
+            req.io.to(`self-${deletedRequest.targetid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.senderid}});
+        } else if (req.user.id === deletedRequest.targetid) {
+            req.io.to(`self-${deletedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.targetid}});
+        }
+    };
+
     res.status(200).json();
     return;
 });
@@ -88,7 +96,10 @@ const acceptRequest = asyncHandler(async (req, res) => {
     );
 
     if (createdNotification && req.io) {
+        const { _count, ...noCount } = targetUser;
         req.io.to(`self-${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
+        req.io.to(`self-${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
+        req.io.to(`user-${acceptedRequest.targetid}`).emit("user-update", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
     };
 
     res.status(200).json();
@@ -125,6 +136,7 @@ const createRequest = asyncHandler(async (req, res) => {
 
     if (createdNotification && req.io) {
         req.io.to(`self-${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
+        req.io.to(`self-${createdRequest.targetid}`).emit("request", {action: "ADD", request: createdRequest});
     };
 
     res.status(200).json();
