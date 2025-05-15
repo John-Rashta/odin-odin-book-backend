@@ -101,8 +101,8 @@ io.on("connection", async (socket) => {
       });
     };
 
-    socket.on("post:join", joinPost({socket}));
-    socket.on("user:join", joinUser({socket}));
+    socket.on("post:join", joinPost({socket, user: req.user}));
+    socket.on("user:join", joinUser({socket, user: req.user}));
   };
 });
 

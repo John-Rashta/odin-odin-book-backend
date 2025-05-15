@@ -12,6 +12,8 @@ interface ServerToClientEvents {
     postDelete: (data: BasicId) => void,
     postUpdate: (data: PostUpdateSocket) => void,
     commentNew: (data: NewCommentSocket) => void,
+    "user:joined": (data: BasicId) => void,
+    "post:joined": (data: BasicId) => void,
 };
 
 interface ClientToServerEvents {

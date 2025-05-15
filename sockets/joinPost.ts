@@ -3,10 +3,11 @@ import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesI
 import { basicSchema } from "../util/socketValidator";
 import { mapErrorDetails } from "../util/socketUtil";
 
-export function joinPost({socket} : 
+export function joinPost({socket, user} : 
     {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
+        user: Express.User
     }) :ClientToServerEvents["post:join"] {
     return (payload, callback) => {
         if (typeof callback !== "function") {
@@ -20,6 +21,7 @@ export function joinPost({socket} :
             });
         };
         socket.join(`post-${value.id}`);
+        socket.to(`self-${user.id}`).emit("post:joined", {id: value.id});
         if (value.comment === "yes") {
             socket.join(`post-${value.id}-comments`);
         };
