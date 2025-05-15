@@ -1,4 +1,5 @@
-import { type Server } from "socket.io";
+import { DefaultEventsMap, type Server } from "socket.io";
+import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesInters";
 
 declare global {
     namespace Express {
@@ -12,7 +13,8 @@ declare global {
 declare global {
     namespace Express {
         interface Request {
-            io?: Server
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            io?: Server<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>
         }
     }
 }

@@ -99,7 +99,7 @@ const acceptRequest = asyncHandler(async (req, res) => {
         const { _count, ...noCount } = targetUser;
         req.io.to(`self-${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
         req.io.to(`self-${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
-        req.io.to(`user-${acceptedRequest.targetid}`).emit("user-update", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
+        req.io.to(`user-${acceptedRequest.targetid}`).emit("userUpdate", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
     };
 
     res.status(200).json();
@@ -136,7 +136,7 @@ const createRequest = asyncHandler(async (req, res) => {
 
     if (createdNotification && req.io) {
         req.io.to(`self-${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
-        req.io.to(`self-${createdRequest.targetid}`).emit("request", {action: "ADD", request: createdRequest});
+        req.io.to(`self-${createdRequest.targetid}`).emit("request", {action: "ADD", data: {request: createdRequest}});
     };
 
     res.status(200).json();

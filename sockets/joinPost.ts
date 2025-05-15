@@ -1,27 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Server, type DefaultEventsMap, type Socket } from "socket.io";
-import { type PrismaClient } from "../generated/prisma";
+import { type DefaultEventsMap, type Socket } from "socket.io";
+import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesInters";
+import { basicSchema } from "../util/socketValidator";
 
-interface PayloadStuff {
-    id: string,
-    comments?: string
-};
-export function joinPost({io, socket, prisma} : 
+export function joinPost({socket} : 
     {
-        io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
-        socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
-        prisma: PrismaClient
-
-    }) {
-    return async (payload: PayloadStuff, callback: (res: Response) => void) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
+    }) :ClientToServerEvents["post:join"] {
+    return (payload, callback) => {
         if (typeof callback !== "function") {
-            return;
+          return;
         };
-
-        socket.join(`post-${payload.id}`);
-
+        const { error, value } = basicSchema.validate(payload);
+        if (error) {
+            return callback({
+            error: "Invalid Payload",
+            errorDetails: error.details,
+            });
+        };
+        socket.join(`post-${value.id}`);
+        if (value.comment === "yes") {
+            socket.join(`post-${value.id}-comments`);
+        };
         return callback({
-            status: "OK",
-        })
+                status: "OK",
+        });
     };
-}
+};

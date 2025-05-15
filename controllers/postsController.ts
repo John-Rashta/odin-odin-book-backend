@@ -68,7 +68,7 @@ const createPost = asyncHandler(async (req, res) => {
     );
 
     if (createdNotification && req.io) {
-        req.io.to(`user-${req.user.id}`).emit("extra-notifications", {notification: createdNotification, id: req.user.id});
+        req.io.to(`user-${req.user.id}`).emit("extraNotifications", {notification: createdNotification, id: req.user.id});
     };
 
     res.status(200).json({postid: createdPost.id});
@@ -92,7 +92,7 @@ const deletePost = asyncHandler(async (req, res) => {
     await deleteThisPost(req.user.id, formData.id);
 
     if (req.io) {
-        req.io.to(`user-${req.user.id}`).emit("delete-post", {id: formData.id});
+        req.io.to(`user-${req.user.id}`).emit("postDelete", {id: formData.id});
     }
     res.status(200).json();
     return;
@@ -145,7 +145,7 @@ const updatePost = asyncHandler(async (req, res) => {
     };
 
     if (req.io) {
-        req.io.to(`post-${updatedPost.id}`).emit("post-update", {type: "content",id: updatedPost.id, content: updatedPost.content})
+        req.io.to(`post-${updatedPost.id}`).emit("postUpdate", {type: "content",id: updatedPost.id, content: updatedPost.content})
     }
 
     res.status(200).json();
@@ -168,7 +168,7 @@ const changeLike = asyncHandler(async (req, res) => {
     };
 
     if (req.io) {
-        req.io.to(`post-${changedPost.id}`).emit("post-update", {type: "likes", newCount: changedPost._count.likes, id: changedPost.id})
+        req.io.to(`post-${changedPost.id}`).emit("postUpdate", {type: "likes", likes: changedPost._count.likes, id: changedPost.id})
     };
 
     res.status(200).json();
@@ -224,9 +224,9 @@ const postComment = asyncHandler(async (req, res) => {
     };
 
     if (req.io) {
-        req.io.to(`post-${updatedPost.id}-comments`).emit("newComment", {id: updatedPost.id, comment: properComment});
+        req.io.to(`post-${updatedPost.id}-comments`).emit("commentNew", {id: updatedPost.id, comment: properComment});
         if (newNotification && comment) {
-            req.io.to(`self-${comment.sender.id}`).emit("notifications", {notification: newNotification});
+            req.io.to(`self-${comment.sender.id}`).emit("notification", {notification: newNotification});
         }
     };
     res.status(200).json({comment: properComment});

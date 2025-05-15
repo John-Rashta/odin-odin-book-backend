@@ -81,7 +81,7 @@ const updateMyself = asyncHandler(async (req, res) => {
           });
           await deleteLocalFile(req.file);
           if (req.io) {
-            req.io.to(`user-${req.user.id}`).emit("user-update", {type: "user", data: changedInfo, id: req.user.id});
+            req.io.to(`user-${req.user.id}`).emit("userUpdate", {type: "user", data: changedInfo, id: req.user.id});
           };
           res.status(200).json();
           return;
@@ -99,7 +99,7 @@ const updateMyself = asyncHandler(async (req, res) => {
     });
 
     if (req.io) {
-            req.io.to(`user-${req.user.id}`).emit("user-update", {type: "user", data: changedInfo, id: req.user.id});
+            req.io.to(`user-${req.user.id}`).emit("userUpdate", {type: "user", data: changedInfo, id: req.user.id});
           };
    
     await deleteLocalFile(req.file);
@@ -124,7 +124,7 @@ const stopFollowing = asyncHandler(async (req, res) => {
 
   if (req.io) {
     req.io.to(`self-${possibleUser.id}`).emit("followers", {action: "REMOVE", id: req.user.id});
-    req.io.to(`user-${possibleUser.id}`).emit("user-update", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
+    req.io.to(`user-${possibleUser.id}`).emit("userUpdate", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
   }
 
   res.status(200).json();

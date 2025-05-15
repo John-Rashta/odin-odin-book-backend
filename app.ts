@@ -7,7 +7,7 @@ import { errorHandler } from "./middleware/errorMiddleware";
 import prisma from "./config/client";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { createServer } from "http";
-import { Server } from "socket.io";
+import { DefaultEventsMap, Server } from "socket.io";
 import { type Request, type Response, type NextFunction } from "express";
 import authRoute from "./routes/authRoute";
 import usersRoute from "./routes/usersRoute";
@@ -16,6 +16,9 @@ import requestsRoute from "./routes/requestsRoute";
 import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
 import { getAllFollowsForIo } from "./util/queries";
+import { ClientToServerEvents, ServerToClientEvents } from "./util/socketTypesInters";
+import { joinPost } from "./sockets/joinPost";
+import { joinUser } from "./sockets/joinUser";
 
 const PORT = 3000;
 
@@ -45,12 +48,12 @@ const sessionStuff = session({
 app.use(sessionStuff);
 
 import "./config/passport";
-import { basicSchema } from "./util/socketValidator";
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-const io = new Server(httpServer, { cors: corsOptions });
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const io = new Server<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>(httpServer, { cors: corsOptions });
 
 app.use(function(req: Request, res: Response, next: NextFunction) {
   req.io = io;
@@ -89,7 +92,6 @@ io.engine.use(onlyForHandshake(passport.session()));
 
 io.on("connection", async (socket) => {
   const req = socket.request as Request & { user: Express.User };
-
   if (req.user) {
     socket.join(`self-${req.user.id}`);
     const currentFollows = await getAllFollowsForIo(req.user.id);
@@ -99,43 +101,8 @@ io.on("connection", async (socket) => {
       });
     };
 
-    socket.on("post:join", (payload, callback) => {
-      if (typeof callback !== "function") {
-          return;
-      };
-      const { error, value } = basicSchema.validate(payload);
-      if (error) {
-        return callback({
-          error: error.name,
-          errorDetails: error.details,
-        });
-      };
-      socket.join(`post-${value.id}`);
-      if (value.comment === "yes") {
-        socket.join(`post-${value.id}-comments`);
-      };
-      return callback({
-            status: "OK",
-      });
-    });
-    socket.on("user:join", (payload, callback) => {
-      if (typeof callback !== "function") {
-        return;
-      };
-      const { error, value } = basicSchema.validate(payload);
-      if (error) {
-        return callback({
-          error: error.name,
-          errorDetails: error.details,
-        });
-      };
-
-      socket.join(`user-${value.id}`);
-      return callback({
-            status: "OK",
-      });
-    });
-
+    socket.on("post:join", joinPost({socket}));
+    socket.on("user:join", joinUser({socket}));
   };
 });
 
