@@ -1,6 +1,7 @@
 import { type DefaultEventsMap, type Socket } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesInters";
 import { basicSchema } from "../util/socketValidator";
+import { mapErrorDetails } from "../util/socketUtil";
 
 export function joinPost({socket} : 
     {
@@ -15,7 +16,7 @@ export function joinPost({socket} :
         if (error) {
             return callback({
             error: "Invalid Payload",
-            errorDetails: error.details,
+            errorDetails: mapErrorDetails(error.details),
             });
         };
         socket.join(`post-${value.id}`);

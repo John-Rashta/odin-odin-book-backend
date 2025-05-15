@@ -230,6 +230,7 @@ const postComment = asyncHandler(async (req, res) => {
         }
     };
     res.status(200).json({comment: properComment});
+    return;
 })
 
 
