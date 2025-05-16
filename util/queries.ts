@@ -299,7 +299,12 @@ const createFollowship = async function makeUserFollowAnotherUser(senderid: stri
 const stopFollowship = async function makeUserStopFollowAnotherUser(userid: string, targetid: string) {
   const possibleUser = await prisma.user.update({
     where: {
-      id: targetid
+      id: targetid,
+      followers: {
+        some: {
+          id: userid
+        }
+      }
     },
     data: {
       followers: {
@@ -1075,6 +1080,28 @@ const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: strin
   return allFollows;
 };
 
+
+const getFollowshipForCheck = async function getFollowshipForCheckingPurposes(userid:string, targetid: string) {
+  const thisUser = await prisma.user.findFirst({
+    where: {
+      id: userid,
+      follows: {
+        some: {
+          id: targetid
+        }
+      }
+    }
+  });
+
+  return thisUser;
+}
+
+////FOR TESTING
+const deleteEverything = async function deleteMostInsertedData() {
+  await prisma.user.deleteMany();
+  await prisma.notification.deleteMany();
+};
+
 export {
   getUserByNameForSession,
   getUserForSession,
@@ -1112,4 +1139,6 @@ export {
   changeCommentLike,
   getThisComment,
   getAllFollowsForIo,
+  deleteEverything,
+  getFollowshipForCheck,
 };

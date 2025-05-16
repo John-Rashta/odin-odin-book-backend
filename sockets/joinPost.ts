@@ -9,7 +9,7 @@ export function joinPost({socket, user} :
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
         user: Express.User
     }) :ClientToServerEvents["post:join"] {
-    return (payload, callback) => {
+    return async (payload, callback) => {
         if (typeof callback !== "function") {
           return;
         };
@@ -20,10 +20,10 @@ export function joinPost({socket, user} :
             errorDetails: mapErrorDetails(error.details),
             });
         };
-        socket.join(`post-${value.id}`);
-        socket.to(`self-${user.id}`).emit("post:joined", {id: value.id});
+        socket.join(`post:${value.id}`);
+        socket.to(`self:${user.id}`).emit("post:joined", {id: value.id});
         if (value.comment === "yes") {
-            socket.join(`post-${value.id}-comments`);
+            socket.join(`post:${value.id}:comments`);
         };
         return callback({
                 status: "OK",

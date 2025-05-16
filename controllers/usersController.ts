@@ -81,7 +81,7 @@ const updateMyself = asyncHandler(async (req, res) => {
           });
           await deleteLocalFile(req.file);
           if (req.io) {
-            req.io.to(`user-${req.user.id}`).emit("userUpdate", {type: "user", data: changedInfo, id: req.user.id});
+            req.io.to(`user:${req.user.id}`).emit("user:updated", {type: "user", data: changedInfo, id: req.user.id});
           };
           res.status(200).json();
           return;
@@ -99,7 +99,7 @@ const updateMyself = asyncHandler(async (req, res) => {
     });
 
     if (req.io) {
-            req.io.to(`user-${req.user.id}`).emit("userUpdate", {type: "user", data: changedInfo, id: req.user.id});
+            req.io.to(`user:${req.user.id}`).emit("user:updated", {type: "user", data: changedInfo, id: req.user.id});
           };
    
     await deleteLocalFile(req.file);
@@ -115,6 +115,11 @@ const stopFollowing = asyncHandler(async (req, res) => {
 
   const formData = matchedData(req);
 
+  if (req.user.id === formData.id) {
+    res.status(400).json();
+    return;
+  };
+
   const possibleUser = await stopFollowship(req.user.id, formData.id);
 
   if (!possibleUser) {
@@ -123,8 +128,8 @@ const stopFollowing = asyncHandler(async (req, res) => {
   };
 
   if (req.io) {
-    req.io.to(`self-${possibleUser.id}`).emit("followers", {action: "REMOVE", id: req.user.id});
-    req.io.to(`user-${possibleUser.id}`).emit("userUpdate", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
+    req.io.to(`self:${possibleUser.id}`).emit("followers", {action: "REMOVE", id: req.user.id});
+    req.io.to(`user:${possibleUser.id}`).emit("user:updated", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
   }
 
   res.status(200).json();
@@ -217,7 +222,7 @@ const getMyFollowers = asyncHandler(async (req, res) => {
 
   const formData = matchedData(req);
 
-  const myFollowers = await getMyFollowships(req.user.id, "followers", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+  const myFollowers = await getMyFollowships(req.user.id, "follows", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myFollowers) {
     res.status(500).json({message: "Internal Error"});
@@ -236,7 +241,7 @@ const getMyFollows = asyncHandler(async (req, res) => {
 
   const formData = matchedData(req);
 
-  const myFollows = await getMyFollowships(req.user.id, "follows", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+  const myFollows = await getMyFollowships(req.user.id, "followers", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!myFollows) {
     res.status(500).json({message: "Internal Error"});

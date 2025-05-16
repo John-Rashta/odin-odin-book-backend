@@ -10,7 +10,6 @@ const usersRoute = Router();
 
 usersRoute.get(
     "/",
-    isAuth,
     validateSearch,
     validateDataQuery,
     validationErrorMiddleware,

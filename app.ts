@@ -93,17 +93,17 @@ io.engine.use(onlyForHandshake(passport.session()));
 io.on("connection", async (socket) => {
   const req = socket.request as Request & { user: Express.User };
   if (req.user) {
-    socket.join(`self-${req.user.id}`);
+    socket.join(`self:${req.user.id}`);
     const currentFollows = await getAllFollowsForIo(req.user.id);
     if (currentFollows) {
       currentFollows.forEach((val) => {
-        socket.join(`user-${val.id}`);
+        socket.join(`user:${val.id}`);
       });
     };
-
-    socket.on("post:join", joinPost({socket, user: req.user}));
-    socket.on("user:join", joinUser({socket, user: req.user}));
   };
+
+  socket.on("post:join", joinPost({socket, user: req.user}));
+  socket.on("user:join", joinUser({socket, user: req.user}));
 });
 
 httpServer.listen(PORT, () => {

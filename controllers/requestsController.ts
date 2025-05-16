@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
-import { createFollowship, createNotification, deleteThisRequest, getUserReceivedRequests, getUserSentRequests, makeRequest } from "../util/queries";
+import { createFollowship, createNotification, deleteThisRequest, getFollowshipForCheck, getUserReceivedRequests, getUserSentRequests, makeRequest } from "../util/queries";
 
 const getReceivedRequests = asyncHandler( async(req, res) => {
     if (!req.user) {
@@ -53,9 +53,9 @@ const deleteRequest = asyncHandler(async (req, res) => {
 
     if (req.io) {
         if (req.user.id === deletedRequest.senderid) {
-            req.io.to(`self-${deletedRequest.targetid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.senderid}});
+            req.io.to(`self:${deletedRequest.targetid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.senderid}});
         } else if (req.user.id === deletedRequest.targetid) {
-            req.io.to(`self-${deletedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.targetid}});
+            req.io.to(`self:${deletedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.targetid}});
         }
     };
 
@@ -97,9 +97,9 @@ const acceptRequest = asyncHandler(async (req, res) => {
 
     if (createdNotification && req.io) {
         const { _count, ...noCount } = targetUser;
-        req.io.to(`self-${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
-        req.io.to(`self-${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
-        req.io.to(`user-${acceptedRequest.targetid}`).emit("userUpdate", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
+        req.io.to(`self:${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
+        req.io.to(`self:${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
+        req.io.to(`user:${acceptedRequest.targetid}`).emit("user:updated", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
     };
 
     res.status(200).json();
@@ -113,6 +113,17 @@ const createRequest = asyncHandler(async (req, res) => {
     };
 
     const formData = matchedData(req);
+
+    if (req.user.id === formData.id) {
+        res.status(400).json();
+        return;
+    };
+
+    const checkUser = await getFollowshipForCheck(req.user.id, formData.id);
+    if (checkUser) {
+        res.status(400).json();
+        return;
+    };
 
     const createdRequest = await makeRequest({
         targetid: formData.id,
@@ -135,8 +146,8 @@ const createRequest = asyncHandler(async (req, res) => {
     });
 
     if (createdNotification && req.io) {
-        req.io.to(`self-${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
-        req.io.to(`self-${createdRequest.targetid}`).emit("request", {action: "ADD", data: {request: createdRequest}});
+        req.io.to(`self:${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
+        req.io.to(`self:${createdRequest.targetid}`).emit("request", {action: "ADD", data: {request: createdRequest}});
     };
 
     res.status(200).json();

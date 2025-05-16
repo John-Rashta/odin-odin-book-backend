@@ -33,7 +33,7 @@ const updateComment = asyncHandler(async (req, res) => {
     const properComment = {...noCount, likes: _count.likes, ownCommentsCount: _count.ownComments};
 
     if (req.io) {
-        req.io.to(`post-${updatedComment.postid}-comments`).emit("commentUpdate",  {type: "comment", id: updatedComment.postid, comment: properComment})
+        req.io.to(`post:${updatedComment.postid}:comments`).emit("comment:updated",  {type: "comment", id: updatedComment.postid, comment: properComment})
     }
 
     res.status(200).json();
@@ -55,7 +55,7 @@ const deleteComment  = asyncHandler(async (req, res) => {
     }
     
     if (req.io) {
-        req.io.to(`post-${deletedComment.postid}-comments`).emit("commentDelete", {id: deletedComment.postid, commentid: deletedComment.id});
+        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.postid, commentid: deletedComment.id});
     }
     res.status(200).json();
     return;
@@ -94,7 +94,7 @@ const changeLike = asyncHandler(async (req, res) => {
     };
 
     if (req.io) {
-        req.io.to(`post-${changedComment.postid}-comments`).emit("commentUpdate", {type:"likes", id: changedComment.postid, likes: changedComment._count.likes});
+        req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", id: changedComment.postid, likes: changedComment._count.likes});
     }
     res.status(200).json();
     return;

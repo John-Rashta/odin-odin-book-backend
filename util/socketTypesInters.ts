@@ -4,14 +4,15 @@ interface ServerToClientEvents {
     request: (data: RequestSocketOptions) => void,
     notification: (data: NotificationSocket) => void,
     follows: (data: FollowsSocket) => void,
-    userUpdate: (data: UserUpdateSocket) => void,
+    "user:updated": (data: UserUpdateSocket) => void,
     followers: (data: FollowersSocket) => void,
-    commentUpdate: (data: CommentUpdateSocket) => void,
-    commentDelete: (data: CommentDeleteSocket) => void,
+    "comment:updated": (data: CommentUpdateSocket) => void,
+    "comment:deleted": (data: CommentDeleteSocket) => void,
     extraNotifications: (data: BasicId & NotificationSocket) => void,
-    postDelete: (data: BasicId) => void,
-    postUpdate: (data: PostUpdateSocket) => void,
-    commentNew: (data: NewCommentSocket) => void,
+    "post:created": (data: NewPostSocket ) => void,
+    "post:deleted": (data: BasicId) => void,
+    "post:updated": (data: PostUpdateSocket) => void,
+    "comment:created": (data: NewCommentSocket) => void,
     "user:joined": (data: BasicId) => void,
     "post:joined": (data: BasicId) => void,
 };
@@ -136,6 +137,20 @@ interface PostUpdateSocket {
 interface NewCommentSocket {
     id: string,
     comment: CommentType
+};
+
+interface NewPostSocket {
+    id: string,
+    post: PostType
+}
+
+interface PostType {
+    content: string;
+    id: string;
+    createdAt: Date;
+    creatorid: string;
+    edited: boolean;
+    likes: number;
 }
 
 interface CommentType {

@@ -34,7 +34,6 @@ commentsRoute.put(
 
 commentsRoute.get(
     "/:id",
-    isAuth,
     validateUUID("id"),
     validateDataQuery,
     validationErrorMiddleware,

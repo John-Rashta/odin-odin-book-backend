@@ -18,7 +18,6 @@ postsRoute.get(
 
 postsRoute.get(
     "/:id",
-    isAuth,
     validateUUID("id"),
     validateDataQuery,
     validationErrorMiddleware,

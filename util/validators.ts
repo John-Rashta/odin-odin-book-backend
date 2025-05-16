@@ -10,6 +10,17 @@ const validateCredentials = [
     .withMessage("Must be only Ascii characters."),
 ];
 
+const validateOptionalLogin = [
+  body("username")
+    .optional({ values: "falsy" })
+    .isAlphanumeric()
+    .withMessage("Only letters and or numbers."),
+  body("password")
+    .optional({ values: "falsy" })
+    .isAscii()
+    .withMessage("Must be only Ascii characters."),
+];
+
 
 const validateUUID = (fieldname: string) => {
     return [param(fieldname).isUUID().withMessage("Must be an UUID")];
@@ -51,6 +62,7 @@ const validateUUID = (fieldname: string) => {
 
   const validateSearch = [
     query("user")
+    .optional({values: "falsy"})
     .custom((value) => {
       return isUUID(value) || isAlphanumeric(value);
     }),
@@ -105,4 +117,5 @@ export {
     validateCommentQuery,
     validateUpdateContent,
     validateDataQuery,
+    validateOptionalLogin,
 };

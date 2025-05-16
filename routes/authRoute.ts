@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validateCredentials } from "../util/validators";
+import { validateCredentials, validateOptionalLogin } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { isAuth } from "../middleware/authMiddleware";
 import passport from "passport";
@@ -16,7 +16,7 @@ authRoute.post(
 
 authRoute.put(
     "/",
-    validateCredentials,
+    validateOptionalLogin,
     validationErrorMiddleware,
     passport.authenticate(["local", "anonymous"]),
     loginUser,

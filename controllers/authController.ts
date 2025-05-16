@@ -28,7 +28,7 @@ const signupUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
     if (!req.user) {
-        res.status(400).json();
+        res.status(200).json({id: "guest"});
         return;
     };
 
@@ -37,7 +37,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res, next) => {
-    if (req.user) {
+    if (!req.user) {
         res.status(400).json();
         return;
     };

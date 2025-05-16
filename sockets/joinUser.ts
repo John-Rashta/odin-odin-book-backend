@@ -9,7 +9,7 @@ export function joinUser({socket, user} :
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
         user: Express.User
     }) :ClientToServerEvents["user:join"] {
-    return (payload, callback) => {
+    return async (payload, callback) => {
         if (typeof callback !== "function") {
             return;
         };
@@ -21,8 +21,8 @@ export function joinUser({socket, user} :
             });
         };
 
-        socket.join(`user-${value.id}`);
-        socket.to(`self-${user.id}`).emit("user:joined", {id: value.id});
+        socket.join(`user:${value.id}`);
+        socket.to(`self:${user.id}`).emit("user:joined", {id: value.id});
         return callback({
                 status: "OK",
         });
