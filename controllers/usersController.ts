@@ -162,24 +162,19 @@ const getUsers = asyncHandler(async (req, res) => {
     if (isUUID(formData.user)) {
       const possibleUser = await getThisUser(formData.user, req.user?.id || undefined);
       if (!possibleUser) {
-        res.status(400).json({message: "User not found."});
+        res.status(200).json({users: []});
         return;
       };
 
       const {_count, ...rest } = possibleUser;
   
-      res.status(200).json({user: [{...rest, followerCount: _count.followers}]});
+      res.status(200).json({users: [{...rest, followerCount: _count.followers}]});
       return;
     };
   
     const possibleUsers = await getSomeUsers({
       username: formData.user, userid: req.user?.id || undefined
     }, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
-  
-    if (!possibleUsers) {
-      res.status(500).json({message: "Internal Error"});
-      return;
-    };
   
     res.status(200).json({users: possibleUsers});
     return;
@@ -188,11 +183,6 @@ const getUsers = asyncHandler(async (req, res) => {
   const possibleUsers = await getSomeUsers({userid: req.user?.id || undefined },
     getTakeAndSkip({amount: formData.amount, skip: formData.skip})
   );
-
-  if (!possibleUsers) {
-    res.status(500).json({message: "Internal Error"});
-    return;
-  };
 
   res.status(200).json({users: possibleUsers});
   return;

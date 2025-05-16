@@ -377,7 +377,8 @@ const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOpti
         ...(typeof options.userid === "string" ? {
           receivedRequests: {
             where: {
-              senderid: options.userid
+              senderid: options.userid,
+              type: "FOLLOW"
             },
             select: {
               id: true,
@@ -436,7 +437,8 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
       ...(typeof myId === "string" ? {
         receivedRequests: {
           where: {
-            senderid: myId
+            senderid: myId,
+            type: "FOLLOW"
           },
           select: {
             id: true,
