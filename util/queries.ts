@@ -503,7 +503,7 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra:
   return possiblePosts;
 };
 
-const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes, extra: TakeAndSkip) {
+const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes, extra: TakeAndSkip, options?: string) {
   const possibleFollowers = await prisma.user.findMany({
     where: {
       [type]: {
@@ -525,7 +525,8 @@ const getMyFollowships = async function getAllOfUserFollowships(userid: string, 
           url: true,
         }
       },
-      receivedRequests: {
+      ...(typeof options === "string" ? {
+        receivedRequests: {
           where: {
             senderid: userid,
             type: "FOLLOW"
@@ -542,6 +543,7 @@ const getMyFollowships = async function getAllOfUserFollowships(userid: string, 
             id: true,
           },
       }
+      } : {}),
     },
     ...extra
   });
