@@ -524,6 +524,23 @@ const getMyFollowships = async function getAllOfUserFollowships(userid: string, 
         select: {
           url: true,
         }
+      },
+      receivedRequests: {
+          where: {
+            senderid: userid,
+            type: "FOLLOW"
+          },
+          select: {
+            id: true,
+          },
+        },
+        followers: {
+          where: {
+            id: userid
+          },
+          select: {
+            id: true,
+          },
       }
     },
     ...extra
