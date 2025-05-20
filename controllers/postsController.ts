@@ -132,11 +132,6 @@ const updatePost = asyncHandler(async (req, res) => {
 
     const updatedPost = await updatePostContent(req.user.id, formData.id, formData.content);
 
-    if (!updatedPost) {
-        res.status(400).json({message: "Post not found."});
-        return;
-    };
-
     if (req.io) {
         req.io.to(`post:${updatedPost.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content})
     }
@@ -154,11 +149,6 @@ const changeLike = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
     const changedPost = await changePostLike(req.user.id, formData.id, formData.action === "ADD" && "connect" || "disconnect");
-
-    if (!changedPost) {
-        res.status(400).json({message: "Post not found."});
-        return;
-    };
 
     if (req.io) {
         req.io.to(`post:${changedPost.id}`).emit("post:updated", {type: "likes", likes: changedPost._count.likes, id: changedPost.id})

@@ -14,11 +14,6 @@ const updateComment = asyncHandler(async (req, res) => {
 
     const updatedComment = await updateThisComment(req.user.id, formData.id, formData.content);
 
-    if (!updatedComment) {
-        res.status(400).json({message: "Comment not found."});
-        return;
-    };
-
     const { _count, ...noCount } = updatedComment;
     const properComment = {...noCount, likes: _count.likes, ownCommentsCount: _count.ownComments};
 
@@ -77,11 +72,6 @@ const changeLike = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
     const changedComment = await changeCommentLike(req.user.id, formData.id, formData.action === "ADD" && "connect" || "disconnect");
-
-    if (!changedComment) {
-        res.status(400).json({message: "Comment not found."});
-        return;
-    };
 
     if (req.io) {
         req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", id: changedComment.postid, likes: changedComment._count.likes});
