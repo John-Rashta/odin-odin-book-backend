@@ -758,20 +758,6 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string, e
   return possiblePost;
 };
 
-const fetchPostForCheck = async function fetchPostForUpdatingPurposes(userid: string, postid: string) {
-  const fetchedPost = await prisma.post.findFirst({
-    where: {
-      creatorid: userid,
-      id: postid
-    },
-    include: {
-      image: true
-    }
-  });
-
-  return fetchedPost;
-};
-
 const updatePostContent = async function updateContentOfSpecificPostByUser(userid: string, postid: string, content: string) {
   const updatedPost = await prisma.post.update({
     data: {
@@ -910,24 +896,6 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
   });
 
   return updatedPost;
-};
-
-const fetchCommentForCheck = async function fetchCommentForUpdatingPurposes(userid: string, commentid: string) {
-  const possibleComment = await prisma.comment.findFirst({
-    where: {
-      id: commentid,
-      senderid: userid
-    },
-    include: {
-      image: {
-        select: {
-          id: true
-        }
-      }
-    }
-  });
-
-  return possibleComment;
 };
 
 const updateThisComment = async function updateCommentByUser(userid: string, commentid: string, content: string) {
@@ -1115,6 +1083,11 @@ const getFollowshipForCheck = async function getFollowshipForCheckingPurposes(us
   });
 
   return thisUser;
+};
+
+const getAllIcons = async function getAllIconsFromDb() {
+  const allIcons = await prisma.icon.findMany();
+  return allIcons;
 }
 
 ////FOR TESTING
@@ -1150,11 +1123,9 @@ export {
   deleteThisPost,
   createThisPost,
   getThisPost,
-  fetchPostForCheck,
   updatePostContent,
   changePostLike,
   createThisComment,
-  fetchCommentForCheck,
   updateThisComment,
   deleteThisComment,
   changeCommentLike,
@@ -1162,4 +1133,5 @@ export {
   getAllFollowsForIo,
   deleteEverything,
   getFollowshipForCheck,
+  getAllIcons,
 };

@@ -4,16 +4,23 @@ import { upload } from "../middleware/uploadMiddleware";
 import { validateDataQuery, validateOptionalCredentials, validateSearch, validateUserProfile, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
 import { multerErrorMiddleware } from "../middleware/multerErrorMiddleware";
-import { getMyFeed, getMyFollowers, getMyFollows, getMyInfo, getUser, getUserPosts, getUsers, stopFollowing, updateMyself } from "../controllers/usersController";
+import { getIconsInfo, getMyFeed, getMyFollowers, getMyFollows, getMyInfo, getUser, getUserPosts, getUsers, searchUsers, stopFollowing, updateMyself } from "../controllers/usersController";
 
 const usersRoute = Router();
 
 usersRoute.get(
     "/",
-    validateSearch,
     validateDataQuery,
     validationErrorMiddleware,
     getUsers,
+);
+
+usersRoute.get(
+    "/search",
+    validateSearch,
+    validateDataQuery,
+    validationErrorMiddleware,
+    searchUsers,
 );
 
 usersRoute.get(
@@ -44,6 +51,11 @@ usersRoute.get(
     validateDataQuery,
     validationErrorMiddleware,
     getMyFeed,
+);
+
+usersRoute.get(
+    "/icons",
+    getIconsInfo,
 );
 
 usersRoute.get(

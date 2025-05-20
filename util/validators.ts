@@ -62,7 +62,6 @@ const validateUUID = (fieldname: string) => {
 
   const validateSearch = [
     query("user")
-    .optional({values: "falsy"})
     .custom((value) => {
       return isUUID(value) || isAlphanumeric(value);
     }),
@@ -83,6 +82,7 @@ const validateUUID = (fieldname: string) => {
 
   const validateCommentQuery =  [
     query("comment")
+      .optional({values: "falsy"})
       .isUUID()
       .withMessage("Must be an UUID.")
   ];

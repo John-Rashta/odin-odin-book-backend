@@ -12,18 +12,18 @@ notificationsRoute.get(
     getNotifications,
 );
 
-notificationsRoute.put(
+notificationsRoute.delete(
+    "/",
+    isAuth,
+    clearNotifications,
+);
+
+notificationsRoute.delete(
     "/:id",
     isAuth,
     validateUUID("id"),
     validationErrorMiddleware,
     clearNotification,
 );
-
-notificationsRoute.delete(
-    "/",
-    isAuth,
-    clearNotifications,
-)
 
 export default notificationsRoute;

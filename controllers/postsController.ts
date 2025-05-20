@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, fetchPostForCheck, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
+import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
@@ -33,7 +33,7 @@ const createPost = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
     if (!formData.content && !req.file) {
-        res.status(400).json();
+        res.status(400).json({message: "Post can't be empty."});
         return;
     };
 
@@ -41,6 +41,7 @@ const createPost = asyncHandler(async (req, res) => {
 
     if (req.file) {
         fileInfo = await uploadFile(req.file);
+         await deleteLocalFile(req.file);
     };
 
     const createdPost = await createThisPost({
@@ -128,20 +129,11 @@ const updatePost = asyncHandler(async (req, res) => {
     };
 
     const formData = matchedData(req);
-    const fetchedPost = await fetchPostForCheck(req.user.id, formData.id);
-    if (!fetchedPost) {
-        res.status(400).json({message: "Post not found."});
-        return;
-    }
-    if (!fetchedPost.image && formData.content === "") {
-        res.status(400).json({message: "Post can't be empty."});
-        return;
-    };
 
     const updatedPost = await updatePostContent(req.user.id, formData.id, formData.content);
 
     if (!updatedPost) {
-        res.status(500).json({message: "Internal Error"});
+        res.status(400).json({message: "Post not found."});
         return;
     };
 
@@ -185,7 +177,7 @@ const postComment = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
     if (!formData.content && !req.file) {
-        res.status(400).json();
+        res.status(400).json({message: "Comment can't be empty."});
         return;
     };
 
@@ -193,6 +185,7 @@ const postComment = asyncHandler(async (req, res) => {
 
     if (req.file) {
         fileInfo = await uploadFile(req.file);
+        await deleteLocalFile(req.file);
     };
 
     const updatedPost = await createThisComment({

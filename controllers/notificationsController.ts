@@ -30,7 +30,7 @@ const clearNotification = asyncHandler(async (req, res) => {
     const possibleUser = await removeNotification(req.user.id, formData.id);
 
     if (!possibleUser) {
-        res.status(400).json({message: "Notification Not Found."});
+        res.status(500).json({message: "Internal Error"});
         return;
     };
 

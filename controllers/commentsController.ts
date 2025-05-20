@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
-import { changeCommentLike, deleteThisComment, fetchCommentForCheck, getThisComment, updateThisComment } from "../util/queries";
+import { changeCommentLike, deleteThisComment, getThisComment, updateThisComment } from "../util/queries";
 import { deleteFiles } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
 
@@ -12,20 +12,10 @@ const updateComment = asyncHandler(async (req, res) => {
 
     const formData = matchedData(req);
 
-    const fetchedComment = await fetchCommentForCheck(req.user.id, formData.id);
-    if (!fetchedComment) {
-        res.status(400).json({message: "Comment not found."});
-        return;
-    }
-    if (!fetchedComment.image && formData.content === "") {
-        res.status(400).json({message: "Comment can't be empty."});
-        return;
-    };
-
     const updatedComment = await updateThisComment(req.user.id, formData.id, formData.content);
 
     if (!updatedComment) {
-        res.status(500).json({message: "Internal Error"});
+        res.status(400).json({message: "Comment not found."});
         return;
     };
 

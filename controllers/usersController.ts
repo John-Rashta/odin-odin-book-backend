@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { deleteLocalFile, deleteFiles, clearFilesIfError, uploadFile } from "../util/helperFunctions";
 import { type UploadApiResponse } from "cloudinary";
 import bcrypt from "bcryptjs";
-import { getUserByNameForSession, getUserForSession, getSelfIconsInfo, getIconInfo, deleteCustomIcon, changeUserInfo, stopFollowship, getThisUser, getSomeUsers, getMyFollowships, getThisUserPosts, getUserFeed } from "../util/queries";
+import { getUserByNameForSession, getUserForSession, getSelfIconsInfo, getIconInfo, deleteCustomIcon, changeUserInfo, stopFollowship, getThisUser, getSomeUsers, getMyFollowships, getThisUserPosts, getUserFeed, getAllIcons } from "../util/queries";
 import { matchedData } from "express-validator";
 import { isUUID } from "validator";
 import { getTakeAndSkip } from "../util/dataHelpers";
@@ -158,31 +158,33 @@ const getMyInfo = asyncHandler(async (req, res) => {
 const getUsers = asyncHandler(async (req, res) => {
   const formData = matchedData(req);
 
-  if (formData.user) {
-    if (isUUID(formData.user)) {
-      const possibleUser = await getThisUser(formData.user, req.user?.id || undefined);
-      if (!possibleUser) {
-        res.status(200).json({users: []});
-        return;
-      };
-
-      const {_count, ...rest } = possibleUser;
-  
-      res.status(200).json({users: [{...rest, followerCount: _count.followers}]});
-      return;
-    };
-  
-    const possibleUsers = await getSomeUsers({
-      username: formData.user, userid: req.user?.id || undefined
-    }, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
-  
-    res.status(200).json({users: possibleUsers});
-    return;
-  }
-
   const possibleUsers = await getSomeUsers({userid: req.user?.id || undefined },
     getTakeAndSkip({amount: formData.amount, skip: formData.skip})
   );
+
+  res.status(200).json({users: possibleUsers});
+  return;
+});
+
+const searchUsers = asyncHandler(async (req,  res) => {
+  const formData = matchedData(req);
+
+  if (isUUID(formData.user)) {
+    const possibleUser = await getThisUser(formData.user, req.user?.id || undefined);
+    if (!possibleUser) {
+      res.status(200).json({users: []});
+      return;
+    };
+
+    const {_count, ...rest } = possibleUser;
+
+    res.status(200).json({users: [{...rest, followerCount: _count.followers}]});
+    return;
+  };
+
+  const possibleUsers = await getSomeUsers({
+    username: formData.user, userid: req.user?.id || undefined
+  }, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   res.status(200).json({users: possibleUsers});
   return;
@@ -248,7 +250,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
   const allPosts = await getThisUserPosts(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
 
   if (!allPosts) {
-    res.status(400).json({message: "User not found."});
+    res.status(500).json({message: "Internal Error"});
     return;
   };
 
@@ -275,6 +277,18 @@ const getMyFeed = asyncHandler(async (req, res) => {
   return;
 });
 
+const getIconsInfo = asyncHandler(async (req, res) => {
+  const iconsInfo = await getAllIcons();
+
+  if (!iconsInfo) {
+    res.status(500).json({message: "Internal Error"});
+    return;
+  };
+
+  res.status(200).json({icons: iconsInfo});
+  return;
+})
+
 export {
     updateMyself,
     stopFollowing,
@@ -285,4 +299,6 @@ export {
     getMyFollows,
     getUserPosts,
     getMyFeed,
+    getIconsInfo,
+    searchUsers,
 };
