@@ -426,6 +426,7 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
       },
       icon: {
         select: {
+          id: true,
           source: true,
         }
       },
