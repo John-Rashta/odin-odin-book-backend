@@ -15,7 +15,7 @@ const updateComment = asyncHandler(async (req, res) => {
     const updatedComment = await updateThisComment(req.user.id, formData.id, formData.content);
 
     const { _count, ...noCount } = updatedComment;
-    const properComment = {...noCount, likes: _count.likes, ownCommentsCount: _count.ownComments};
+    const properComment = {...noCount, likesCount: _count.likes, ownCommentsCount: _count.ownComments};
 
     if (req.io) {
         req.io.to(`post:${updatedComment.postid}:comments`).emit("comment:updated",  {type: "comment", id: updatedComment.postid, comment: properComment})
@@ -49,7 +49,7 @@ const deleteComment  = asyncHandler(async (req, res) => {
 const getComment = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const foundComment = await getThisComment(formData.id);
+    const foundComment = await getThisComment(formData.id, req.user?.id);
 
     if (!foundComment) {
         res.status(400).json({message: "Comment not found."});
@@ -58,21 +58,21 @@ const getComment = asyncHandler(async (req, res) => {
 
     const {_count, ...rest} = foundComment;
 
-    res.status(200).json({comment: {...rest, likes: _count.likes, ownCommentsCount: _count.ownComments}});
+    res.status(200).json({comment: {...rest, likesCount: _count.likes, ownCommentsCount: _count.ownComments}});
     return;
 });
 
 const getComments = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const foundComments = await getThisCommentComments(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+    const foundComments = await getThisCommentComments(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}), req.user?.id);
 
     if (!foundComments) {
         res.status(500).json({message: "Internal Error"});
         return;
     };
 
-    res.status(200).json({comments: foundComments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))})
+    res.status(200).json({comments: foundComments.map(({_count, ...val}) => ({...val, likesCount: _count.likes, ownCommentsCount: _count.ownComments}))})
 });
 
 const changeLike = asyncHandler(async (req, res) => {

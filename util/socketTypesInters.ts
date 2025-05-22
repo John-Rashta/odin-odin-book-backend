@@ -150,11 +150,17 @@ interface PostType {
     createdAt: Date;
     creatorid: string;
     edited: boolean;
-    likes: number;
+    likesCount: number;
+    likes?: {
+        id: string
+    }[];
 }
 
 interface CommentType {
-    likes: number;
+    likesCount: number;
+    likes?: {
+        id: string
+    }[];
     ownCommentsCount: number;
     sender: {
         id: string;

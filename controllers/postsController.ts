@@ -19,7 +19,7 @@ const getMyPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({posts: myPosts.map(({_count, ...val}) => ({ ...val, likes: _count.likes }))});
+  res.status(200).json({posts: myPosts.map(({_count, ...val}) => ({ ...val, likesCount: _count.likes }))});
   return;
 });
 
@@ -70,7 +70,7 @@ const createPost = asyncHandler(async (req, res) => {
 
     if (createdNotification && req.io) {
         req.io.to(`user:${req.user.id}`).emit("extraNotifications", {notification: createdNotification, id: req.user.id});
-        req.io.to(`user:${req.user.id}`).emit("post:created", {post: {...createdPost, likes: 0}, id: req.user.id});
+        req.io.to(`user:${req.user.id}`).emit("post:created", {post: {...createdPost, likesCount: 0}, id: req.user.id});
     };
 
     res.status(200).json({postid: createdPost.id});
@@ -103,7 +103,7 @@ const deletePost = asyncHandler(async (req, res) => {
 const getPostComments = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const possibleComments = await getThisPostComments(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+    const possibleComments = await getThisPostComments(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}), req.user?.id);
 
     if (!possibleComments) {
         res.status(500).json({message: "Internal Error"});
@@ -111,7 +111,7 @@ const getPostComments = asyncHandler(async (req, res) => {
     };
 
     res.status(200).json({comments: 
-        possibleComments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))
+        possibleComments.map(({_count, ...val}) => ({...val, likesCount: _count.likes, ownCommentsCount: _count.ownComments}))
     });
     return;
 });
@@ -119,7 +119,7 @@ const getPostComments = asyncHandler(async (req, res) => {
 const getPost = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const possiblePost = await getThisPost(formData.id);
+    const possiblePost = await getThisPost(formData.id, req.user?.id);
 
     if (!possiblePost) {
         res.status(400).json({message: "Post not found."});
@@ -131,7 +131,7 @@ const getPost = asyncHandler(async (req, res) => {
     res.status(200).json({post: 
         {
             ...restPost, 
-            likes: _count.likes,
+            likesCount: _count.likes,
         }
     });
     return;
@@ -155,7 +155,7 @@ const updatePost = asyncHandler(async (req, res) => {
 
     res.status(200).json({post: {
         ...restPost,
-        likes: _count.likes
+        likesCount: _count.likes
     }});
     return;
 });
@@ -213,8 +213,7 @@ const postComment = asyncHandler(async (req, res) => {
     };
     
     const {_count, comment, ...noCountComment } = updatedPost.comments[0];
-    const properComment = {...noCountComment, likes: _count.likes, ownCommentsCount: _count.ownComments};
-
+    const properComment = {...noCountComment, likesCount: _count.likes, ownCommentsCount: _count.ownComments};
     let newNotification;
 
     if (comment) {

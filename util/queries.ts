@@ -463,7 +463,7 @@ const getThisUser = async function getSpecificUser(userid: string, myId?: string
   return possibleUser;
 };
 
-const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra: TakeAndSkip) {
+const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra: TakeAndSkip, myId?: string) {
   const possiblePosts = await prisma.post.findMany({
     where: {
       creatorid: userid
@@ -479,6 +479,16 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra:
           url: true
         }
       },
+      ...(typeof myId === "string" ?
+        {likes: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       creator: {
         select: {
           id: true,
@@ -581,6 +591,16 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
           likes: true
         }
       },
+      ...(typeof userid === "string" ?
+        {likes: {
+          where: {
+            id: userid
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       creator: {
         select: {
           id: true,
@@ -681,7 +701,7 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
   return createdPost;
 };
 
-const getThisPostComments = async function getDirectCommentsOfThisPost(postid: string, extra: TakeAndSkip) {
+const getThisPostComments = async function getDirectCommentsOfThisPost(postid: string, extra: TakeAndSkip, myId?: string) {
   const possibleComments = await prisma.comment.findMany({
     ...extra,
      orderBy: {
@@ -699,6 +719,16 @@ const getThisPostComments = async function getDirectCommentsOfThisPost(postid: s
           url: true
         }
       },
+      ...(typeof myId === "string" ?
+        {likes: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true,
@@ -727,7 +757,7 @@ const getThisPostComments = async function getDirectCommentsOfThisPost(postid: s
   return possibleComments;
 };
 
-const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
+const getThisPost = async function getSpecificPostFromDatabase(postid: string, myId?: string) {
   const possiblePost = await prisma.post.findFirst({
     where: {
       id: postid
@@ -738,6 +768,16 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
           url: true
         }
       },
+      ...(typeof myId === "string" ?
+        {likes: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true
@@ -781,6 +821,16 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
           url: true
         }
       },
+      ...(typeof userid === "string" ?
+        {likes: {
+          where: {
+            id: userid
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true
@@ -821,6 +871,16 @@ const changePostLike = async function changeLikeOfUserOnPost(userid: string, pos
       }
     },
     include: {
+      ...(typeof userid === "string" ?
+        {likes: {
+          where: {
+            id: userid
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true
@@ -949,6 +1009,16 @@ const updateThisComment = async function updateCommentByUser(userid: string, com
               url: true
             }
           },
+          ...(typeof userid === "string" ?
+          {likes: {
+            where: {
+              id: userid
+            },
+            select: {
+              id: true
+            }
+          }} : {}
+        ),
           _count: {
             select: {
               likes: true,
@@ -1003,6 +1073,16 @@ const changedComment = await prisma.comment.update({
       }
     },
     include: {
+      ...(typeof userid === "string" ?
+        {likes: {
+          where: {
+            id: userid
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true
@@ -1014,7 +1094,7 @@ const changedComment = await prisma.comment.update({
   return changedComment;
 };
 
-const getThisCommentComments = async function getCommentsFromComment(commentid: string, extra: TakeAndSkip) {
+const getThisCommentComments = async function getCommentsFromComment(commentid: string, extra: TakeAndSkip, myId?: string) {
   const commentsData = await prisma.comment.findMany({
     where: {
       commentid
@@ -1024,6 +1104,16 @@ const getThisCommentComments = async function getCommentsFromComment(commentid: 
       sentAt: "desc"
     },
     include: {
+      ...(typeof myId === "string" ?
+        {likes: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true,
@@ -1057,7 +1147,7 @@ const getThisCommentComments = async function getCommentsFromComment(commentid: 
   return commentsData;
 };
 
-const getThisComment = async function getCommentAndItsChildren(commentid: string) {
+const getThisComment = async function getCommentAndItsChildren(commentid: string, myId?:string) {
   const commentData = await prisma.comment.findFirst({
     where: {
       id: commentid
@@ -1068,6 +1158,16 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
           url: true,
         }
       },
+      ...(typeof myId === "string" ?
+        {likes: {
+          where: {
+            id: myId
+          },
+          select: {
+            id: true
+          }
+        }} : {}
+      ),
       _count: {
         select: {
           likes: true,
