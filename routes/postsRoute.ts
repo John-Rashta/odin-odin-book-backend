@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateCommentQuery, validateDataQuery, validateLikeType, validatePost, validateUpdateContent, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
-import { changeLike, createPost, deletePost, getMyPosts, getPost, postComment, updatePost } from "../controllers/postsController";
+import { changeLike, createPost, deletePost, getMyPosts, getPost, getPostComments, postComment, updatePost } from "../controllers/postsController";
 import { isAuth } from "../middleware/authMiddleware";
 import { multerErrorMiddleware } from "../middleware/multerErrorMiddleware";
 import { upload } from "../middleware/uploadMiddleware";
@@ -19,10 +19,17 @@ postsRoute.get(
 postsRoute.get(
     "/:id",
     validateUUID("id"),
-    validateDataQuery,
     validationErrorMiddleware,
     getPost,
 );
+
+postsRoute.get(
+    "/:id/comments",
+    validateUUID("id"),
+     validateDataQuery,
+    validationErrorMiddleware,
+    getPostComments,
+)
 
 postsRoute.put(
     "/:id",

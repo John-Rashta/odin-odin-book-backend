@@ -2,7 +2,7 @@ import { Router } from "express";
 import { isAuth } from "../middleware/authMiddleware";
 import { validateDataQuery, validateLikeType, validateUpdateContent, validateUUID } from "../util/validators";
 import { validationErrorMiddleware } from "../middleware/validationErrorMiddleware";
-import { changeLike, deleteComment, getComment, updateComment } from "../controllers/commentsController";
+import { changeLike, deleteComment, getComment, getComments, updateComment } from "../controllers/commentsController";
 
 
 const commentsRoute = Router();
@@ -36,9 +36,16 @@ commentsRoute.put(
 commentsRoute.get(
     "/:id",
     validateUUID("id"),
-    validateDataQuery,
     validationErrorMiddleware,
     getComment,
+);
+
+commentsRoute.get(
+    "/:id/comments",
+    validateUUID("id"),
+    validateDataQuery,
+    validationErrorMiddleware,
+    getComments,
 );
 
 export default commentsRoute;

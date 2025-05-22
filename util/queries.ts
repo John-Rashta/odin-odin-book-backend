@@ -681,7 +681,53 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
   return createdPost;
 };
 
-const getThisPost = async function getSpecificPostFromDatabase(postid: string, extra: TakeAndSkip) {
+const getThisPostComments = async function getDirectCommentsOfThisPost(postid: string, extra: TakeAndSkip) {
+  const possibleComments = await prisma.comment.findMany({
+    ...extra,
+     orderBy: {
+      sentAt: "desc"
+    },
+    where: {
+      comment: {
+        is: null
+      },
+      postid
+    },
+    include: {
+      image: {
+        select: {
+          url: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true,
+          ownComments: true,
+        }
+      },
+      sender: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true,
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return possibleComments;
+};
+
+const getThisPost = async function getSpecificPostFromDatabase(postid: string) {
   const possiblePost = await prisma.post.findFirst({
     where: {
       id: postid
@@ -695,46 +741,6 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string, e
       _count: {
         select: {
           likes: true
-        }
-      },
-      comments: {
-        ...extra,
-        orderBy: {
-          sentAt: "desc"
-        },
-        where: {
-          comment: {
-            is: null
-          }
-        },
-        include: {
-          image: {
-            select: {
-              url: true
-            }
-          },
-          _count: {
-            select: {
-              likes: true,
-              ownComments: true,
-            }
-          },
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              icon: {
-                select: {
-                  source: true,
-                }
-              },
-              customIcon: {
-                select: {
-                  url: true,
-                }
-              }
-            }
-          }
         }
       },
       creator: {
@@ -980,7 +986,50 @@ const changedComment = await prisma.comment.update({
   return changedComment;
 };
 
-const getThisComment = async function getCommentAndItsChildren(commentid: string, extra: TakeAndSkip) {
+const getThisCommentComments = async function getCommentsFromComment(commentid: string, extra: TakeAndSkip) {
+  const commentsData = await prisma.comment.findMany({
+    where: {
+      commentid
+    },
+    ...extra,
+    orderBy: {
+      sentAt: "desc"
+    },
+    include: {
+      _count: {
+        select: {
+          likes: true,
+          ownComments: true
+        }
+      },
+      image: {
+        select: {
+          url: true
+        }
+      },
+      sender: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true,
+            }
+          }
+        }
+      }
+    }
+  });
+
+  return commentsData;
+};
+
+const getThisComment = async function getCommentAndItsChildren(commentid: string) {
   const commentData = await prisma.comment.findFirst({
     where: {
       id: commentid
@@ -993,7 +1042,8 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
       },
       _count: {
         select: {
-          likes: true
+          likes: true,
+          ownComments: true,
         }
       },
       sender: {
@@ -1012,41 +1062,6 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
           }
         }
       },
-      ownComments: {
-        ...extra,
-        orderBy: {
-          sentAt: "desc"
-        },
-        include: {
-          _count: {
-            select: {
-              likes: true,
-              ownComments: true
-            }
-          },
-          image: {
-            select: {
-              url: true
-            }
-          },
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              icon: {
-                select: {
-                  source: true,
-                }
-              },
-              customIcon: {
-                select: {
-                  url: true,
-                }
-              }
-            }
-          }
-        }
-      }
     }
   });
 
@@ -1135,4 +1150,6 @@ export {
   deleteEverything,
   getFollowshipForCheck,
   getAllIcons,
+  getThisCommentComments,
+  getThisPostComments,
 };

@@ -594,6 +594,30 @@ describe("Basic API functionality", () => {
       });
   });
 
+  test("Get Post Comments", (done) => {
+     userOne
+      .get(`/posts/${userOneInfo.postid}/comments`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+          expect(res.body).toHaveProperty("comments");
+          done();
+      });
+  });
+
+   test("Get comments from post that doesn't exist (shouldn't return error)", (done) => {
+     userOne
+      .get(`/posts/${testUUID}/comments`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+          expect(res.body).toHaveProperty("comments");
+          expect(res.body.comments.length).toEqual(0);
+          done();
+      });
+  });
+
+
   ///ERROR TEST
   test("Can't get post that doesn't exist", (done) => {
     userOne
@@ -867,7 +891,29 @@ describe("Basic API functionality", () => {
         .expect(200)
         .then((res) => {
             expect(res.body).toHaveProperty("comment");
-            expect(res.body.comment).toHaveProperty("ownComments");
+            done();
+        });
+    });
+
+    test("get comment comments", (done) => {
+      userTwo
+        .get(`/comments/${userOneInfo.commentid}/comments`)
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .then((res) => {
+            expect(res.body).toHaveProperty("comments");
+            done();
+        });
+    });
+
+    test("get comments of comment that doesn't exist(shouldn't be an error)", (done) => {
+      userTwo
+        .get(`/comments/${testUUID}/comments`)
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .then((res) => {
+            expect(res.body).toHaveProperty("comments");
+            expect(res.body.comments.length).toEqual(0);
             done();
         });
     });

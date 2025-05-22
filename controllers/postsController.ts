@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisUserPosts, updatePostContent } from "../util/queries";
+import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisPostComments, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
@@ -100,10 +100,26 @@ const deletePost = asyncHandler(async (req, res) => {
     return;
 });
 
+const getPostComments = asyncHandler(async (req, res) => {
+    const formData = matchedData(req);
+
+    const possibleComments = await getThisPostComments(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+
+    if (!possibleComments) {
+        res.status(500).json({message: "Internal Error"});
+        return;
+    };
+
+    res.status(200).json({comments: 
+        possibleComments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))
+    });
+    return;
+});
+
 const getPost = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
-    const possiblePost = await getThisPost(formData.id, getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+    const possiblePost = await getThisPost(formData.id);
 
     if (!possiblePost) {
         res.status(400).json({message: "Post not found."});
@@ -116,7 +132,6 @@ const getPost = asyncHandler(async (req, res) => {
         {
             ...restPost, 
             likes: _count.likes,
-            comments: possiblePost.comments.map(({_count, ...val}) => ({...val, likes: _count.likes, ownCommentsCount: _count.ownComments}))
         }
     });
     return;
@@ -227,4 +242,5 @@ export {
     updatePost,
     changeLike,
     postComment,
+    getPostComments
 };
