@@ -136,7 +136,7 @@ const updatePost = asyncHandler(async (req, res) => {
         req.io.to(`post:${updatedPost.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content})
     }
 
-    res.status(200).json();
+    res.status(200).json({post: updatedPost});
     return;
 });
 

@@ -21,7 +21,7 @@ const updateComment = asyncHandler(async (req, res) => {
         req.io.to(`post:${updatedComment.postid}:comments`).emit("comment:updated",  {type: "comment", id: updatedComment.postid, comment: properComment})
     }
 
-    res.status(200).json();
+    res.status(200).json({comment: properComment});
     return;
 });
 
