@@ -58,7 +58,7 @@ const getComment = asyncHandler(async (req, res) => {
 
     const {_count, ...rest} = foundComment;
 
-    res.status(200).json({comment: {...rest, likes: _count.likes}});
+    res.status(200).json({comment: {...rest, likes: _count.likes, ownCommentsCount: _count.ownComments}});
     return;
 });
 
