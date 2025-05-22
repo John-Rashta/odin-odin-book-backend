@@ -895,6 +895,15 @@ describe("Basic API functionality", () => {
         });
     });
 
+    ///ERROR TEST
+     test("Can't get comment that doesn't exist", (done) => {
+      userTwo
+        .get(`/comments/${testUUID}`)
+        .expect("Content-Type", /json/)
+        .expect({ message: "Comment not found." })
+        .expect(400, done);
+    });
+
     test("get comment comments", (done) => {
       userTwo
         .get(`/comments/${userOneInfo.commentid}/comments`)
