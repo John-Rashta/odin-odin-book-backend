@@ -147,11 +147,16 @@ const updatePost = asyncHandler(async (req, res) => {
 
     const updatedPost = await updatePostContent(req.user.id, formData.id, formData.content);
 
+    const { _count, ...restPost} = updatedPost;
+
     if (req.io) {
         req.io.to(`post:${updatedPost.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content})
     }
 
-    res.status(200).json({post: updatedPost});
+    res.status(200).json({post: {
+        ...restPost,
+        likes: _count.likes
+    }});
     return;
 });
 

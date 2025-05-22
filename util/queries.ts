@@ -775,6 +775,34 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
       id: postid,
       creatorid: userid,
     },
+    include: {
+      image: {
+        select: {
+          url: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true
+        }
+      },
+      creator: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true
+            }
+          }
+        },
+      }
+    }
   });
   
   return updatedPost;
