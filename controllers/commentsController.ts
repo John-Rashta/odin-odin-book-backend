@@ -40,9 +40,9 @@ const deleteComment  = asyncHandler(async (req, res) => {
     }
     
     if (req.io) {
-        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.postid, commentid: deletedComment.id});
+        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.postid, commentid: deletedComment.id, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
     }
-    res.status(200).json();
+    res.status(200).json({id: deletedComment.id, postid: deletedComment.postid, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
     return;
 });
 
