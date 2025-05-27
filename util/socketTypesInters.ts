@@ -91,7 +91,7 @@ interface FollowsSocket  {
 };
 
 interface UserUpdateSocket {
-    type: "followers" | "follows" | "user",
+    type: "followers" | "user",
     newCount?: number,
     id: string,
     data?: {

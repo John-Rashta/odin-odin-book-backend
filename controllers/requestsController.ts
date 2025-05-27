@@ -96,9 +96,8 @@ const acceptRequest = asyncHandler(async (req, res) => {
     );
 
     if (createdNotification && req.io) {
-        const { _count, ...noCount } = targetUser;
+        const { _count } = targetUser;
         req.io.to(`self:${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
-        req.io.to(`self:${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
         req.io.to(`user:${acceptedRequest.targetid}`).emit("user:updated", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
     };
 
