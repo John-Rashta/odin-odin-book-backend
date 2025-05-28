@@ -15,11 +15,15 @@ interface ServerToClientEvents {
     "comment:created": (data: NewCommentSocket) => void,
     "user:joined": (data: BasicId) => void,
     "post:joined": (data: BasicId) => void,
+    "user:leaved": (data: BasicId) => void,
+    "post:leaved": (data: BasicId) => void,
 };
 
 interface ClientToServerEvents {
     "post:join": (payload: PayloadClient, callback: (res: Response) => void) => void,
     "user:join": (payload: PayloadClient, callback: (res: Response) => void) => void,
+    "post:leave": (payload: PayloadClient, callback: (res: Response) => void) => void,
+    "user:leave": (payload: PayloadClient, callback: (res: Response) => void) => void,
 };
 
 type Response = Error | Success;

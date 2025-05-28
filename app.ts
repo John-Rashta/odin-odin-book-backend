@@ -19,6 +19,8 @@ import { getAllFollowsForIo } from "./util/queries";
 import { ClientToServerEvents, ServerToClientEvents } from "./util/socketTypesInters";
 import { joinPost } from "./sockets/joinPost";
 import { joinUser } from "./sockets/joinUser";
+import { leavePost } from "./sockets/leavePost";
+import { leaveUser } from "./sockets/leaveUser";
 
 const PORT = 3000;
 
@@ -104,6 +106,8 @@ io.on("connection", async (socket) => {
 
   socket.on("post:join", joinPost({socket, user: req.user}));
   socket.on("user:join", joinUser({socket, user: req.user}));
+  socket.on("post:leave", leavePost({socket, user: req.user}));
+  socket.on("user:leave", leaveUser({socket, user: req.user}));
 });
 
 httpServer.listen(PORT, () => {

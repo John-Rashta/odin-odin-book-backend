@@ -21,7 +21,9 @@ export function joinPost({socket, user} :
             });
         };
         socket.join(`post:${value.id}`);
-        socket.to(`self:${user.id}`).emit("post:joined", {id: value.id});
+        if (user.id) {
+            socket.to(`self:${user.id}`).emit("post:joined", {id: value.id});
+        };
         if (value.comment === "yes") {
             socket.join(`post:${value.id}:comments`);
         };

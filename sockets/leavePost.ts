@@ -3,15 +3,15 @@ import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesI
 import { basicSchema } from "../util/socketValidator";
 import { mapErrorDetails } from "../util/socketUtil";
 
-export function joinUser({socket, user} : 
+export function leavePost({socket, user} :
     {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
         user: Express.User
-    }) :ClientToServerEvents["user:join"] {
+    }) :ClientToServerEvents["post:leave"] {
     return async (payload, callback) => {
         if (typeof callback !== "function") {
-            return;
+          return;
         };
         const { error, value } = basicSchema.validate(payload);
         if (error) {
@@ -20,10 +20,9 @@ export function joinUser({socket, user} :
             errorDetails: mapErrorDetails(error.details),
             });
         };
-
-        socket.join(`user:${value.id}`);
+        socket.leave(`post:${value.id}`);
         if (user.id) {
-            socket.to(`self:${user.id}`).emit("user:joined", {id: value.id});
+            socket.to(`self:${user.id}`).emit("post:leaved", {id: value.id});
         };
         return callback({
                 status: "OK",
