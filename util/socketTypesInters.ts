@@ -137,6 +137,7 @@ interface PostUpdateSocket {
     id: string,
     likes?: number,
     content?: string,
+    userid: string,
 };
 
 interface NewCommentSocket {
@@ -150,6 +151,19 @@ interface NewPostSocket {
 }
 
 interface PostType {
+    image: {
+        url: string;
+    } | null;
+    creator: {
+        id: string;
+        username: string;
+        icon: {
+            source: string;
+        };
+        customIcon: {
+            url: string;
+        } | null;
+    };
     content: string;
     id: string;
     createdAt: Date;
@@ -159,6 +173,7 @@ interface PostType {
     likes?: {
         id: string
     }[];
+    ownCommentsCount: number;
 }
 
 interface CommentType {

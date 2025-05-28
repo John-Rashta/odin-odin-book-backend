@@ -254,7 +254,7 @@ const getUserPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({posts: allPosts.map(({_count, ...val}) => ({...val, likesCount: _count.likes})) });
+  res.status(200).json({posts: allPosts.map(({_count, ...val}) => ({...val, likesCount: _count.likes, ownCommentsCount: _count.comments})) });
   return;
 });
 
@@ -273,7 +273,7 @@ const getMyFeed = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({feed: myFeed.map(({_count, ...val }) => ({...val, likesCount: _count.likes}))});
+  res.status(200).json({feed: myFeed.map(({_count, ...val }) => ({...val, likesCount: _count.likes, ownCommentsCount: _count.comments}))});
   return;
 });
 

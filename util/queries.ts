@@ -471,7 +471,14 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra:
     include: {
       _count: {
         select: {
-          likes: true
+          likes: true,
+          comments: {
+            where: {
+              comment: {
+                is: null
+              }
+            }
+          }
         }
       },
       image: {
@@ -588,7 +595,14 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
       },
       _count: {
         select: {
-          likes: true
+          likes: true,
+          comments: {
+            where: {
+              comment: {
+                is: null
+              }
+            }
+          }
         }
       },
       ...(typeof userid === "string" ?
@@ -695,6 +709,29 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
           }
         }
       }: {})
+    },
+    include:  {
+      creator: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            }
+          },
+          customIcon: {
+            select: {
+              url: true
+            }
+          }
+        },
+      },
+      image: {
+        select: {
+          url: true
+        }
+      }
     }
   });
 
@@ -780,7 +817,14 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string, m
       ),
       _count: {
         select: {
-          likes: true
+          likes: true,
+          comments: {
+            where: {
+              comment: {
+                is: null
+              }
+            }
+          }
         }
       },
       creator: {
@@ -833,7 +877,7 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
       ),
       _count: {
         select: {
-          likes: true
+          likes: true,
         }
       },
       creator: {

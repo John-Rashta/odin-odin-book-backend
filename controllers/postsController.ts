@@ -19,7 +19,7 @@ const getMyPosts = asyncHandler(async (req, res) => {
     return;
   };
 
-  res.status(200).json({posts: myPosts.map(({_count, ...val}) => ({ ...val, likesCount: _count.likes }))});
+  res.status(200).json({posts: myPosts.map(({_count, ...val}) => ({ ...val, likesCount: _count.likes, ownCommentsCount: _count.comments }))});
   return;
 });
 
@@ -70,7 +70,7 @@ const createPost = asyncHandler(async (req, res) => {
 
     if (createdNotification && req.io) {
         req.io.to(`user:${req.user.id}`).emit("extraNotifications", {notification: createdNotification, id: req.user.id});
-        req.io.to(`user:${req.user.id}`).emit("post:created", {post: {...createdPost, likesCount: 0}, id: req.user.id});
+        req.io.to(`user:${req.user.id}`).emit("post:created", {post: {...createdPost, likesCount: 0, ownCommentsCount: 0}, id: req.user.id});
     };
 
     res.status(200).json({postid: createdPost.id});
@@ -132,6 +132,7 @@ const getPost = asyncHandler(async (req, res) => {
         {
             ...restPost, 
             likesCount: _count.likes,
+            ownCommentsCount: _count.comments,
         }
     });
     return;
@@ -150,12 +151,12 @@ const updatePost = asyncHandler(async (req, res) => {
     const { _count, ...restPost} = updatedPost;
 
     if (req.io) {
-        req.io.to(`post:${updatedPost.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content})
+        req.io.to(`post:${updatedPost.id}`).to(`user:${req.user.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content, userid: updatedPost.creatorid})
     }
 
     res.status(200).json({post: {
         ...restPost,
-        likesCount: _count.likes
+        likesCount: _count.likes,
     }});
     return;
 });
@@ -171,7 +172,7 @@ const changeLike = asyncHandler(async (req, res) => {
     const changedPost = await changePostLike(req.user.id, formData.id, formData.action === "ADD" && "connect" || "disconnect");
 
     if (req.io) {
-        req.io.to(`post:${changedPost.id}`).emit("post:updated", {type: "likes", likes: changedPost._count.likes, id: changedPost.id})
+        req.io.to(`post:${changedPost.id}`).emit("post:updated", {type: "likes", likes: changedPost._count.likes, id: changedPost.id, userid: changedPost.creatorid})
     };
 
     res.status(200).json();
