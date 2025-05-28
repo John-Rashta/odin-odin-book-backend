@@ -18,7 +18,7 @@ const updateComment = asyncHandler(async (req, res) => {
     const properComment = {...noCount, likesCount: _count.likes, ownCommentsCount: _count.ownComments};
 
     if (req.io) {
-        req.io.to(`post:${updatedComment.postid}:comments`).emit("comment:updated",  {type: "comment", id: updatedComment.postid, comment: properComment})
+        req.io.to(`post:${updatedComment.postid}:comments`).emit("comment:updated",  {type: "comment", postid: updatedComment.postid, id: updatedComment.id, comment: properComment, ...(updatedComment.commentid ? {parentid: updatedComment.commentid}: {})})
     }
 
     res.status(200).json({comment: properComment});
@@ -40,7 +40,7 @@ const deleteComment  = asyncHandler(async (req, res) => {
     }
     
     if (req.io) {
-        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.postid, commentid: deletedComment.id, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
+        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.id, postid: deletedComment.postid, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
     }
     res.status(200).json({id: deletedComment.id, postid: deletedComment.postid, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
     return;
@@ -86,7 +86,7 @@ const changeLike = asyncHandler(async (req, res) => {
     const changedComment = await changeCommentLike(req.user.id, formData.id, formData.action === "ADD" && "connect" || "disconnect");
 
     if (req.io) {
-        req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", id: changedComment.postid, likes: changedComment._count.likes});
+        req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", postid: changedComment.postid ,id: changedComment.id, likes: changedComment._count.likes, ...(changedComment.commentid ? {parentid: changedComment.commentid}: {})});
     }
     res.status(200).json();
     return;

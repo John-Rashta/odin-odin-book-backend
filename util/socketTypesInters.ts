@@ -123,12 +123,14 @@ interface CommentUpdateSocket {
     type: "comment" | "likes",
     likes?: number,
     id: string,
-    comment?: CommentType
+    comment?: CommentType,
+    postid: string,
+    parentid?: string,
 };
 
 interface CommentDeleteSocket {
     id: string,
-    commentid: string,
+    postid: string,
     parentid?: string,
 };
 

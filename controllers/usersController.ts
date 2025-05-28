@@ -129,7 +129,7 @@ const stopFollowing = asyncHandler(async (req, res) => {
 
   if (req.io) {
     req.io.to(`self:${possibleUser.id}`).emit("followers", {action: "REMOVE", id: req.user.id});
-    req.io.to(`user:${possibleUser.id}`).emit("user:updated", {type: "followers", newCount: possibleUser._count.followers, id: req.user.id});
+    req.io.to(`user:${possibleUser.id}`).emit("user:updated", {type: "followers", newCount: possibleUser._count.followers, id: possibleUser.id});
   }
 
   res.status(200).json();
