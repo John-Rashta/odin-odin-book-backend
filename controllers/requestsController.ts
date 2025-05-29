@@ -53,7 +53,7 @@ const deleteRequest = asyncHandler(async (req, res) => {
 
     if (req.io) {
         if (req.user.id === deletedRequest.senderid) {
-            req.io.to(`self:${deletedRequest.targetid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.senderid}});
+            req.io.to(`self:${deletedRequest.targetid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.targetid}});
         } else if (req.user.id === deletedRequest.targetid) {
             req.io.to(`self:${deletedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: deletedRequest.id, userid: deletedRequest.targetid}});
         }
@@ -99,7 +99,7 @@ const acceptRequest = asyncHandler(async (req, res) => {
         const { _count, ...noCount } = targetUser;
         req.io.to(`self:${acceptedRequest.senderid}`).emit("notification", {notification: createdNotification});
         req.io.to(`self:${acceptedRequest.senderid}`).emit("follows", {action: "ADD", data: noCount});
-        req.io.to(`self:${acceptedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: acceptedRequest.id, userid: acceptedRequest.senderid}});
+        req.io.to(`self:${acceptedRequest.senderid}`).emit("request", {action: "REMOVE", data: {id: acceptedRequest.id, userid: acceptedRequest.targetid}});
         req.io.to(`user:${acceptedRequest.targetid}`).emit("user:updated", {type: "followers", newCount: _count.followers, id: acceptedRequest.targetid});
     };
 
