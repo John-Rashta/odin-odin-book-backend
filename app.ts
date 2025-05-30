@@ -96,6 +96,7 @@ io.on("connection", async (socket) => {
   const req = socket.request as Request & { user: Express.User };
   if (req.user) {
     socket.join(`self:${req.user.id}`);
+    socket.join(`user:${req.user.id}`);
     const currentFollows = await getAllFollowsForIo(req.user.id);
     if (currentFollows) {
       currentFollows.forEach((val) => {
