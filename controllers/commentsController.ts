@@ -84,11 +84,12 @@ const changeLike = asyncHandler(async (req, res) => {
     const formData = matchedData(req);
 
     const changedComment = await changeCommentLike(req.user.id, formData.id, formData.action === "ADD" && "connect" || "disconnect");
+    const {_count, ...rest } = changedComment;
 
     if (req.io) {
-        req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", postid: changedComment.postid ,id: changedComment.id, likes: changedComment._count.likes, ...(changedComment.commentid ? {parentid: changedComment.commentid}: {})});
+        req.io.to(`post:${changedComment.postid}:comments`).emit("comment:updated", {type:"likes", postid: changedComment.postid ,id: changedComment.id, likes: _count.likes, ...(changedComment.commentid ? {parentid: changedComment.commentid}: {})});
     }
-    res.status(200).json();
+    res.status(200).json({comment: rest});
     return;
 });
 
