@@ -151,7 +151,7 @@ const createRequest = asyncHandler(async (req, res) => {
         req.io.to(`self:${createdRequest.targetid}`).emit("request", {action: "ADD", data: {request: createdRequest}});
     };
 
-    res.status(200).json();
+    res.status(200).json({id: createdRequest.id});
     return;
 });
 
