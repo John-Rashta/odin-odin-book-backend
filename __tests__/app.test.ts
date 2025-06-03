@@ -433,6 +433,17 @@ describe("Basic API functionality", () => {
         });
     });
 
+    test("Get users without extra options", (done) => {
+      userOne
+        .get("/users")
+        .expect("Content-Type", /json/)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toHaveProperty("users");
+          done();
+        });
+    });
+
     test("Get user posts", (done) => {
       userOne
         .get(`/users/${userTwoInfo.id}/posts`)

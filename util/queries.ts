@@ -363,13 +363,18 @@ const createNotification = async function createNotificationForAction(options: N
 
 const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOptions, extra: TakeAndSkip) {
   const possibleUsers = prisma.user.findMany({
-    ...(typeof options.username === "string" ? {
-      where: {
+    where: {
+      ...(typeof options.username === "string" ? {
         username: {
           contains: options.username
         }
-      }
-    } : {}),
+      } : {}),
+      ...(typeof options.userid === "string" ? {
+          id: {
+            not: options.userid
+          }
+      } : {}),
+    },
     orderBy: {
       username: "asc"
     },
