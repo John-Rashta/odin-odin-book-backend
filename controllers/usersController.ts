@@ -233,7 +233,7 @@ const getMyFollows = asyncHandler(async (req, res) => {
 
   const formData = matchedData(req);
 
-  const myFollows = await getMyFollowships(req.user.id, "followers", getTakeAndSkip({amount: formData.amount, skip: formData.skip}));
+  const myFollows = await getMyFollowships(req.user.id, "followers", getTakeAndSkip({amount: formData.amount, skip: formData.skip}), "yes");
 
   if (!myFollows) {
     res.status(500).json({message: "Internal Error"});
