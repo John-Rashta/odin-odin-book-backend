@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
-import { changeCommentLike, deleteThisComment, getThisComment, getThisCommentComments, updateThisComment } from "../util/queries";
+import { changeCommentLike, deleteThisComment, getCommentForCheck, getThisComment, getThisCommentComments, updateThisComment } from "../util/queries";
 import { deleteFiles } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
 
@@ -40,7 +40,15 @@ const deleteComment  = asyncHandler(async (req, res) => {
     }
     
     if (req.io) {
-        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.id, postid: deletedComment.postid, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
+        let parentComment;
+        if (deletedComment.commentid) {
+            parentComment = await getCommentForCheck(deletedComment.commentid);
+        };
+       
+        req.io.to(`post:${deletedComment.postid}:comments`).emit("comment:deleted", {id: deletedComment.id, postid: deletedComment.postid, 
+            ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {}),
+            ...((parentComment && parentComment.commentid) ? {superparentid: parentComment.commentid}: {}),
+        });
     }
     res.status(200).json({id: deletedComment.id, postid: deletedComment.postid, ...(deletedComment.commentid ? {parentid: deletedComment.commentid}: {})});
     return;

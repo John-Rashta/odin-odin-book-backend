@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getImagesInPostForDelete, getThisPost, getThisPostComments, getThisUserPosts, updatePostContent } from "../util/queries";
+import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getCommentForCheck, getImagesInPostForDelete, getThisPost, getThisPostComments, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
@@ -228,7 +228,13 @@ const postComment = asyncHandler(async (req, res) => {
     };
 
     if (req.io) {
-        req.io.to(`post:${updatedPost.id}:comments`).emit("comment:created", {id: updatedPost.id, comment: properComment});
+        let parentComment;
+        if (properComment.commentid) {
+            parentComment = await getCommentForCheck(properComment.commentid);
+        }
+        req.io.to(`post:${updatedPost.id}:comments`).emit("comment:created", {id: updatedPost.id, comment: properComment,
+            ...((parentComment && parentComment.commentid) ? {superparentid: parentComment.commentid}: {}),
+        });
         if (newNotification && comment) {
             req.io.to(`self:${comment.sender.id}`).emit("notification", {notification: newNotification});
         }

@@ -133,6 +133,7 @@ interface CommentDeleteSocket {
     id: string,
     postid: string,
     parentid?: string,
+    superparentid?: string,
 };
 
 interface PostUpdateSocket {
@@ -145,6 +146,7 @@ interface PostUpdateSocket {
 
 interface NewCommentSocket {
     id: string,
+    superparentid?: string,
     comment: CommentType
 };
 

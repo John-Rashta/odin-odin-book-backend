@@ -1281,7 +1281,17 @@ const getFollowshipForCheck = async function getFollowshipForCheckingPurposes(us
 const getAllIcons = async function getAllIconsFromDb() {
   const allIcons = await prisma.icon.findMany();
   return allIcons;
-}
+};
+
+const getCommentForCheck = async function getThisCommentToCheckParent(id: string) {
+  const possibleComment = await prisma.comment.findFirst({
+    where: {
+      id
+    }
+  });
+
+  return possibleComment;
+};
 
 ////FOR TESTING
 const deleteEverything = async function deleteMostInsertedData() {
@@ -1329,4 +1339,5 @@ export {
   getAllIcons,
   getThisCommentComments,
   getThisPostComments,
+  getCommentForCheck,
 };
