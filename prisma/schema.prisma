@@ -53,7 +53,7 @@ model Comment {
   sentAt DateTime
   post Post @relation(fields: [postid], references: [id], onDelete: Cascade)
   postid String
-  comment Comment? @relation("myComments", fields: [commentid], references: [id])
+  comment Comment? @relation("myComments", fields: [commentid], references: [id], onDelete: Cascade)
   commentid String?
   ownComments Comment[] @relation("myComments")
   image CustomImage?
