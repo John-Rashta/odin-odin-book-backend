@@ -50,6 +50,8 @@ const sessionStuff = session({
 app.use(sessionStuff);
 
 import "./config/passport";
+import { joinFollow } from "./sockets/joinFollow";
+import { leaveFollow } from "./sockets/leaveFollow";
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -97,18 +99,21 @@ io.on("connection", async (socket) => {
   if (req.user) {
     socket.join(`self:${req.user.id}`);
     socket.join(`user:${req.user.id}`);
+    socket.join(`user:${req.user.id}:follows`);
+    socket.on("follow:join", joinFollow({socket}));
+    socket.on("follow:leave", leaveFollow({socket}));
     const currentFollows = await getAllFollowsForIo(req.user.id);
     if (currentFollows) {
       currentFollows.forEach((val) => {
-        socket.join(`user:${val.id}`);
+        socket.join(`user:${val.id}:follows`);
       });
     };
   };
 
-  socket.on("post:join", joinPost({socket, user: req.user}));
-  socket.on("user:join", joinUser({socket, user: req.user}));
-  socket.on("post:leave", leavePost({socket, user: req.user}));
-  socket.on("user:leave", leaveUser({socket, user: req.user}));
+  socket.on("post:join", joinPost({socket}));
+  socket.on("user:join", joinUser({socket}));
+  socket.on("post:leave", leavePost({socket}));
+  socket.on("user:leave", leaveUser({socket}));
 });
 
 httpServer.listen(PORT, () => {

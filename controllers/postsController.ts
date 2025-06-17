@@ -173,7 +173,8 @@ const changeLike = asyncHandler(async (req, res) => {
     const { _count, ...rest } = changedPost;
     if (req.io) {
         req.io.to(`post:${changedPost.id}`).to(`user:${changedPost.creatorid}`).emit("post:updated", {type: "likes", likes: _count.likes, id: changedPost.id, userid: changedPost.creatorid})
-    };
+        req.io.to(`user:${changedPost.creatorid}:follows`).emit("follow:post:updated", {type: "likes", likes: _count.likes, id: changedPost.id, userid: changedPost.creatorid});
+    };  
 
     res.status(200).json({post: rest});
     return;

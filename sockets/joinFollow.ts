@@ -3,14 +3,14 @@ import { ClientToServerEvents, ServerToClientEvents } from "../util/socketTypesI
 import { basicSchema } from "../util/socketValidator";
 import { mapErrorDetails } from "../util/socketUtil";
 
-export function leavePost({socket} :
+export function joinFollow({socket} : 
     {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
-    }) :ClientToServerEvents["post:leave"] {
+    }) :ClientToServerEvents["follow:join"] {
     return async (payload, callback) => {
         if (typeof callback !== "function") {
-          return;
+            return;
         };
         const { error, value } = basicSchema.validate(payload);
         if (error) {
@@ -19,8 +19,8 @@ export function leavePost({socket} :
             errorDetails: mapErrorDetails(error.details),
             });
         };
-        socket.leave(`post:${value.id}`);
-        socket.leave(`post:${value.id}:comments`);
+
+        socket.join(`user:${value.id}:follows`);
         return callback({
                 status: "OK",
         });

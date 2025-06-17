@@ -4,7 +4,7 @@ const basicSchema = Joi.object({
     id: Joi.string()
         .required()
         .uuid(),
-    comment: Joi.string()
+    comments: Joi.string()
             .optional()
             .valid("yes")
     

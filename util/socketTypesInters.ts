@@ -13,10 +13,10 @@ interface ServerToClientEvents {
     "post:deleted": (data: BasicId) => void,
     "post:updated": (data: PostUpdateSocket) => void,
     "comment:created": (data: NewCommentSocket) => void,
-    "user:joined": (data: BasicId) => void,
-    "post:joined": (data: BasicId) => void,
-    "user:leaved": (data: BasicId) => void,
-    "post:leaved": (data: BasicId) => void,
+    "follow:post:created": (data: NewPostSocket ) => void,
+    "follow:post:deleted": (data: BasicId) => void,
+    "follow:post:updated": (data: PostUpdateSocket) => void,
+
 };
 
 interface ClientToServerEvents {
@@ -24,6 +24,8 @@ interface ClientToServerEvents {
     "user:join": (payload: PayloadClient, callback: (res: Response) => void) => void,
     "post:leave": (payload: PayloadClient, callback: (res: Response) => void) => void,
     "user:leave": (payload: PayloadClient, callback: (res: Response) => void) => void,
+    "follow:join": (payload: PayloadClient, callback: (res: Response) => void) => void,
+    "follow:leave": (payload: PayloadClient, callback: (res: Response) => void) => void,
 };
 
 type Response = Error | Success;
