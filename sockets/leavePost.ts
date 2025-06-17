@@ -21,6 +21,7 @@ export function leavePost({socket, user} :
             });
         };
         socket.leave(`post:${value.id}`);
+        socket.leave(`post:${value.id}:comments`);
         if (user.id) {
             socket.to(`self:${user.id}`).emit("post:leaved", {id: value.id});
         };
