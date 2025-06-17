@@ -7,7 +7,7 @@ export function joinUser({socket, user} :
     {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
-        user: Express.User
+        user: Express.User |  undefined
     }) :ClientToServerEvents["user:join"] {
     return async (payload, callback) => {
         if (typeof callback !== "function") {
@@ -22,7 +22,7 @@ export function joinUser({socket, user} :
         };
 
         socket.join(`user:${value.id}`);
-        if (user.id) {
+        if (user && user.id) {
             socket.to(`self:${user.id}`).emit("user:joined", {id: value.id});
         };
         return callback({

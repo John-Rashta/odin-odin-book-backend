@@ -7,7 +7,7 @@ export function leavePost({socket, user} :
     {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         socket: Socket<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>,
-        user: Express.User
+        user: Express.User | undefined
     }) :ClientToServerEvents["post:leave"] {
     return async (payload, callback) => {
         if (typeof callback !== "function") {
@@ -22,7 +22,7 @@ export function leavePost({socket, user} :
         };
         socket.leave(`post:${value.id}`);
         socket.leave(`post:${value.id}:comments`);
-        if (user.id) {
+        if (user && user.id) {
             socket.to(`self:${user.id}`).emit("post:leaved", {id: value.id});
         };
         return callback({
