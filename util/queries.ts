@@ -1248,7 +1248,7 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
 const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: string) {
   const allFollows = await prisma.user.findMany({
     where: {
-      follows: {
+      followers: {
         some: {
           id: userid
         }

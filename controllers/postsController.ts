@@ -69,7 +69,8 @@ const createPost = asyncHandler(async (req, res) => {
     );
 
     if (createdNotification && req.io) {
-        req.io.to(`user:${req.user.id}`).emit("extraNotifications", {notification: createdNotification, id: req.user.id});
+        req.io.to(`user:${req.user.id}:follows`).emit("extraNotifications", {notification: createdNotification, id: req.user.id});
+        req.io.to(`user:${req.user.id}:follows`).emit("follow:post:created", {post: {...createdPost, likesCount: 0, ownCommentsCount: 0}, id: req.user.id});
         req.io.to(`user:${req.user.id}`).emit("post:created", {post: {...createdPost, likesCount: 0, ownCommentsCount: 0}, id: req.user.id});
     };
 
@@ -95,6 +96,7 @@ const deletePost = asyncHandler(async (req, res) => {
 
     if (req.io) {
         req.io.to(`user:${req.user.id}`).emit("post:deleted", {id: formData.id});
+        req.io.to(`user:${req.user.id}:follows`).emit("follow:post:deleted", {id: formData.id});
     }
     res.status(200).json();
     return;
@@ -151,7 +153,8 @@ const updatePost = asyncHandler(async (req, res) => {
     const { _count, ...restPost} = updatedPost;
 
     if (req.io) {
-        req.io.to(`post:${updatedPost.id}`).to(`user:${req.user.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content, userid: updatedPost.creatorid})
+        req.io.to(`post:${updatedPost.id}`).to(`user:${req.user.id}`).emit("post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content, userid: updatedPost.creatorid});
+        req.io.to(`user:${req.user.id}:follows`).emit("follow:post:updated", {type: "content",id: updatedPost.id, content: updatedPost.content, userid: updatedPost.creatorid})
     }
 
     res.status(200).json({post: {
@@ -218,7 +221,7 @@ const postComment = asyncHandler(async (req, res) => {
     const properComment = {...noCountComment, likesCount: _count.likes, ownCommentsCount: _count.ownComments};
     let newNotification;
 
-    if (comment) {
+    if (comment && comment.sender.id !== req.user.id) {
         newNotification = await createNotification({
             createdAt: noCountComment.sentAt,
             content: `${req.user.username} responded to your comment!`,
