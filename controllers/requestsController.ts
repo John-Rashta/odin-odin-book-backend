@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
-import { createFollowship, createNotification, deleteThisRequest, getFollowshipForCheck, getUserReceivedRequests, getUserSentRequests, makeRequest } from "../util/queries";
+import { checkNotifications, createFollowship, createNotification, deleteThisRequest, getFollowshipForCheck, getUserReceivedRequests, getUserSentRequests, makeRequest } from "../util/queries";
+import { format } from "date-fns";
 
 const getReceivedRequests = asyncHandler( async(req, res) => {
     if (!req.user) {
@@ -90,7 +91,7 @@ const acceptRequest = asyncHandler(async (req, res) => {
             createdAt: new Date(),
             content: `${req.user.username} accepted your Follow Request`,
             type: "USER",
-            typeid: acceptedRequest.senderid,
+            typeid: req.user.id,
             usersid: [acceptedRequest.senderid]
         }
     );
@@ -138,16 +139,40 @@ const createRequest = asyncHandler(async (req, res) => {
         return;
     };
 
-    const createdNotification = await createNotification({
-        createdAt: createdRequest.sentAt,
-        usersid: [createdRequest.targetid],
+    const possibleNotification = await checkNotifications({
+        user: createdRequest.targetid,
         type: "USER",
-        typeid: req.user.id,
-        content: `${req.user.username} sent you a ${formData.type.toLowerCase()} request`
+        id: req.user.id,
+        content: `sent you a ${formData.type.toLowerCase()} request`
     });
 
-    if (createdNotification && req.io) {
-        req.io.to(`self:${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
+    let createdNotification;
+    if (possibleNotification.length > 0) {
+        const possibleDate = format(new Date(possibleNotification[0].createdAt), 'MM/dd/yyyy');
+        const newDate = format(new Date(createdRequest.sentAt), 'MM/dd/yyyy');
+        if (possibleDate !== newDate) {
+            createdNotification = await createNotification({
+                createdAt: createdRequest.sentAt,
+                usersid: [createdRequest.targetid],
+                type: "USER",
+                typeid: req.user.id,
+                content: `${req.user.username} sent you a ${formData.type.toLowerCase()} request`
+            });
+        };
+    } else {
+        createdNotification = await createNotification({
+            createdAt: createdRequest.sentAt,
+            usersid: [createdRequest.targetid],
+            type: "USER",
+            typeid: req.user.id,
+            content: `${req.user.username} sent you a ${formData.type.toLowerCase()} request`
+        });
+    };
+
+    if (req.io) {
+        if (createdNotification) {
+            req.io.to(`self:${createdRequest.targetid}`).emit("notification", {notification: createdNotification});
+        };
         req.io.to(`self:${createdRequest.targetid}`).emit("request", {action: "ADD", data: {request: createdRequest}});
     };
 

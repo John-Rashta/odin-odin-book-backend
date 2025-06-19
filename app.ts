@@ -102,7 +102,7 @@ io.on("connection", async (socket) => {
     socket.join(`user:${req.user.id}:follows`);
     socket.on("follow:join", joinFollow({socket}));
     socket.on("follow:leave", leaveFollow({socket}));
-    const currentFollows = await getAllFollowsForIo(req.user.id);
+    const currentFollows = await getAllFollowsForIo(req.user.id, "followers");
     if (currentFollows) {
       currentFollows.forEach((val) => {
         socket.join(`user:${val.id}:follows`);

@@ -56,15 +56,14 @@ const createPost = asyncHandler(async (req, res) => {
         return;
     };
 
-    const getFollows = await getAllFollowsForIo(req.user.id);
-
+    const getFollowers = await getAllFollowsForIo(req.user.id, "follows");
     const createdNotification = await createNotification(
         {
         createdAt: createdPost.createdAt,
         content: `Check ${req.user.username} new Post!`,
         type: "POST",
         typeid: createdPost.id,
-        usersid: getFollows.map((val) => val.id)
+        usersid: getFollowers.map((val) => val.id)
         }
     );
 

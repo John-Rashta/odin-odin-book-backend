@@ -1,6 +1,6 @@
 import prisma from "../config/client";
 import { CommentOptions, NotificationsOptions, PostOptions, RequestOptions, SearchOptions, TakeAndSkip, UserUpdate } from "./interfaces";
-import { followTypes, likeActions, requestUsers } from "./types";
+import { followTypes, likeActions, notificationTypes, requestUsers } from "./types";
 
 const getUserByNameForSession = async function getUserFromDatabaseByUsername(
     username: string, pass = false
@@ -1245,10 +1245,10 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
   return commentData;
 };
 
-const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: string) {
+const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: string, type: "followers" | "follows") {
   const allFollows = await prisma.user.findMany({
     where: {
-      followers: {
+      [type]: {
         some: {
           id: userid
         }
@@ -1291,6 +1291,31 @@ const getCommentForCheck = async function getThisCommentToCheckParent(id: string
   });
 
   return possibleComment;
+};
+
+const checkNotifications = async function checkIfNotificationsExist({user, type, id, content}: {user: string, type: notificationTypes, id?: string, content: string}) {
+  const possibleNotifications = await prisma.notification.findMany({
+    where: {
+      user: {
+        some: {
+          id: user
+        }
+      },
+      type,
+      ...(typeof id === "string" ? {
+        typeid: id
+      } : {}),
+      content: {
+        contains: content
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    },
+    take: 1
+  });
+  
+  return possibleNotifications;
 };
 
 ////FOR TESTING
@@ -1340,4 +1365,5 @@ export {
   getThisCommentComments,
   getThisPostComments,
   getCommentForCheck,
+  checkNotifications
 };
