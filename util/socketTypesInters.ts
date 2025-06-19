@@ -95,6 +95,9 @@ interface FollowsSocket  {
         customIcon: {
             url: string;
         } | null;
+        followers?: {
+            id: string
+        }[]
     }
 };
 
