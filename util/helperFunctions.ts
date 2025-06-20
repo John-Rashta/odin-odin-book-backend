@@ -29,6 +29,15 @@ const deleteFiles = async function deleteFilesFromCloudinary(
   return;
 };
 
+const deleteFile = async function deleteFileFromCloudinary(fileInfo: FileData) {
+  if (!fileInfo) {
+    return;
+  };
+
+  await cloudinary.uploader.destroy(fileInfo.public_id, {resource_type: "image"});
+  return;
+};
+
 const deleteLocalFile = async function deleteFileFromTemporaryLocalStorage(
   fileStuff: Express.Multer.File | undefined,
 ) {
@@ -63,4 +72,4 @@ const clearFilesIfError = async function deleteFilesFromLocalAndCloud(
   return;
 };
 
-export { deleteFiles, deleteLocalFile, uploadFile, clearFilesIfError };
+export { deleteFiles, deleteLocalFile, uploadFile, clearFilesIfError, deleteFile };

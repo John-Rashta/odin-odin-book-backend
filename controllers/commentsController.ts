@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import { matchedData } from "express-validator";
 import { changeCommentLike, deleteThisComment, getCommentForCheck, getThisComment, getThisCommentComments, updateThisComment } from "../util/queries";
-import { deleteFiles } from "../util/helperFunctions";
+import { deleteFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -36,7 +36,7 @@ const deleteComment  = asyncHandler(async (req, res) => {
     const deletedComment = await deleteThisComment(req.user.id, formData.id);
 
     if (deletedComment.image) {
-        await deleteFiles([deletedComment.image]);
+        await deleteFile(deletedComment.image);
     }
     
     if (req.io) {
