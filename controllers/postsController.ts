@@ -91,7 +91,7 @@ const deletePost = asyncHandler(async (req, res) => {
     if (deletedData.image || deletedData.comments.length > 0) {
         const possibleImages = deletedData.comments.map((ele) => ele.image as FileData);
         if (deletedData.image) {
-            possibleImages.concat(deletedData.image);
+            possibleImages.push(deletedData.image);
         };
         await deleteFiles(possibleImages);
     };
