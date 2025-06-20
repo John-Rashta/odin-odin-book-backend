@@ -19,7 +19,6 @@ const deleteFiles = async function deleteFilesFromCloudinary(
   if (allIds[0].length < 1) {
     return;
   }
-  console.log(allIds)
   await Promise.all(
     allIds.map(async (idCollection) => {
       await cloudinary.api.delete_resources(idCollection, {
