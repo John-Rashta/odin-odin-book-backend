@@ -689,7 +689,20 @@ const deleteThisPost = async function deleteThisPostByUser(userid: string, posti
     where: {
       creatorid: userid,
       id: postid
-    }
+    },
+    include: {
+      comments: {
+        select: {
+          image: true
+        },
+        where: {
+          image: {
+            isNot: null
+          }
+        }
+      },
+      image: true
+    },
   });
 
   return deletedPost;

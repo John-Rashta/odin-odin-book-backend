@@ -50,7 +50,14 @@ interface CommentOptions {
 interface TakeAndSkip {
     take: number,
     skip: number,
-}
+};
+
+interface FileData {
+  id: string;
+  public_id: string;
+  url: string;
+  uploadAt: Date;
+};
 
 export {
     RequestOptions,
@@ -62,4 +69,5 @@ export {
     PostOptions,
     CommentOptions,
     TakeAndSkip,
+    FileData,
 };

@@ -1,8 +1,9 @@
 import asyncHandler from "express-async-handler";
-import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getCommentForCheck, getImagesInPostForDelete, getThisPost, getThisPostComments, getThisUserPosts, updatePostContent } from "../util/queries";
+import { changePostLike, createNotification, createThisComment, createThisPost, deleteThisPost, getAllFollowsForIo, getCommentForCheck, getThisPost, getThisPostComments, getThisUserPosts, updatePostContent } from "../util/queries";
 import { matchedData } from "express-validator";
 import { deleteFiles, deleteLocalFile, uploadFile } from "../util/helperFunctions";
 import { getTakeAndSkip } from "../util/dataHelpers";
+import { FileData } from "../util/interfaces";
 
 const getMyPosts = asyncHandler(async (req, res) => {
   if (!req.user) {
@@ -85,14 +86,15 @@ const deletePost = asyncHandler(async (req, res) => {
 
     const formData = matchedData(req);
 
-    const allComments = await getImagesInPostForDelete(req.user.id, formData.id);
-
-    if (allComments.length > 0) {
-        await deleteFiles(allComments);
+    const deletedData = await deleteThisPost(req.user.id, formData.id);
+    
+    if (deletedData.image || deletedData.comments.length > 0) {
+        const possibleImages = deletedData.comments.map((ele) => ele.image as FileData);
+        if (deletedData.image) {
+            possibleImages.concat(deletedData.image);
+        };
+        await deleteFiles(possibleImages);
     };
-
-    await deleteThisPost(req.user.id, formData.id);
-
     if (req.io) {
         req.io.to(`user:${req.user.id}`).emit("post:deleted", {id: formData.id});
         req.io.to(`user:${req.user.id}:follows`).emit("follow:post:deleted", {id: formData.id});

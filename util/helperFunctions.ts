@@ -2,14 +2,9 @@ import { cloudinary } from "../config/cloudinary";
 import { promisify } from "node:util";
 import fs from "fs";
 import { UploadApiResponse } from "cloudinary";
+import { FileData } from "./interfaces";
 const unlinkWithAsync = promisify(fs.unlink);
 
-interface FileData {
-  id: string;
-  public_id: string;
-  url: string;
-  uploadAt: Date;
-}
 type IdCollection = string[];
 const deleteFiles = async function deleteFilesFromCloudinary(
   filesInfo: FileData[],
