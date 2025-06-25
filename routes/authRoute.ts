@@ -18,7 +18,7 @@ authRoute.put(
     "/",
     validateOptionalLogin,
     validationErrorMiddleware,
-    passport.authenticate(["local", "anonymous"]),
+    passport.authenticate(["local"]),
     loginUser,
 );
 
