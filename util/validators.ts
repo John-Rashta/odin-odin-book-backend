@@ -4,10 +4,12 @@ import { isAlphanumeric, isUUID } from "validator";
 const validateCredentials = [
     body("username")
         .isAlphanumeric()
-        .withMessage("Only letters and or numbers."),
+        .withMessage("Only letters and or numbers.")
+        .trim(),
     body("password")
     .isAscii()
-    .withMessage("Must be only Ascii characters."),
+    .withMessage("Must be only Ascii characters.")
+    .trim(),
 ];
 
 const validateOptionalLogin = [
@@ -72,6 +74,7 @@ const validateUUID = (fieldname: string) => {
     .optional({values: "falsy"})
     .notEmpty()
     .isString()
+    .trim()
   ];
 
   const validateLikeType = [
@@ -92,6 +95,7 @@ const validateUUID = (fieldname: string) => {
       .notEmpty()
       .isString()
       .withMessage("Can't be empty and must be text.")
+      .trim()
   ];
 
   const validateDataQuery = [
