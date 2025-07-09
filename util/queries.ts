@@ -1163,7 +1163,7 @@ const getThisCommentComments = async function getCommentsFromComment(commentid: 
     },
     ...extra,
     orderBy: {
-      sentAt: "desc"
+      sentAt: "asc"
     },
     include: {
       ...(typeof myId === "string" ?
