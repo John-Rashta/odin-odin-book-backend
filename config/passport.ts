@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import "dotenv/config";
 import { VerifyFunction } from "passport-local";
 import { getUserForSession, getUserByNameForSession } from "../util/queries";
-import {Strategy as AnonymousStrategy} from "passport-anonymous";
+import { Strategy as AnonymousStrategy } from "passport-anonymous";
 
 const verifyCallback: VerifyFunction = async (username, password, done) => {
   try {

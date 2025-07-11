@@ -1,112 +1,142 @@
 import prisma from "../config/client";
-import { CommentOptions, NotificationsOptions, PostOptions, RequestOptions, SearchOptions, TakeAndSkip, UserUpdate } from "./interfaces";
-import { followTypes, likeActions, notificationTypes, requestUsers } from "./types";
+import {
+  CommentOptions,
+  NotificationsOptions,
+  PostOptions,
+  RequestOptions,
+  SearchOptions,
+  TakeAndSkip,
+  UserUpdate,
+} from "./interfaces";
+import {
+  followTypes,
+  likeActions,
+  notificationTypes,
+  requestUsers,
+} from "./types";
 
 const getUserByNameForSession = async function getUserFromDatabaseByUsername(
-    username: string, pass = false
-  ) {
-    const possibleUser = await prisma.user.findFirst({
-      where: {
-        username,
-      },
-      select: {
-        id: true,
-        username: true,
-        ...(pass ? {password: true} : {})
-      }
-    });
-  
-    return possibleUser;
-};
-  
-const getUserForSession = async function getUserFromDatabase(id: string, pass=false) {
-    const possibleUser = await prisma.user.findFirst({
-      where: {
-        id,
-      },
-      select: {
-        id: true,
-        username: true,
-        ...(pass ? {password: true} : {})
-      },
-    });
-    return possibleUser;
-};
-
-const createUser = async function createUserInDatabase(username: string, password: string, date: Date) {
-    const possibleUser = await prisma.user.create({
-      data: {
-        username,
-        password,
-        joinedAt: date,
-        icon: {
-          connect: {
-            id: 1
-          }
-        }
-      },
-      omit: {
-        password: true
-      },
-    });
+  username: string,
+  pass = false,
+) {
+  const possibleUser = await prisma.user.findFirst({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+      username: true,
+      ...(pass ? { password: true } : {}),
+    },
+  });
 
   return possibleUser;
 };
 
-const getMyNotifications = async function getCurrentUserNotifications(userid: string) {
-    const possibleNotifications = await prisma.notification.findMany({
-      where: {
-        user: {
-          some: {
-            id: userid
-          }
-        }
+const getUserForSession = async function getUserFromDatabase(
+  id: string,
+  pass = false,
+) {
+  const possibleUser = await prisma.user.findFirst({
+    where: {
+      id,
+    },
+    select: {
+      id: true,
+      username: true,
+      ...(pass ? { password: true } : {}),
+    },
+  });
+  return possibleUser;
+};
+
+const createUser = async function createUserInDatabase(
+  username: string,
+  password: string,
+  date: Date,
+) {
+  const possibleUser = await prisma.user.create({
+    data: {
+      username,
+      password,
+      joinedAt: date,
+      icon: {
+        connect: {
+          id: 1,
+        },
       },
-      orderBy: {
-        createdAt: "desc"
-      }
-    });
+    },
+    omit: {
+      password: true,
+    },
+  });
+
+  return possibleUser;
+};
+
+const getMyNotifications = async function getCurrentUserNotifications(
+  userid: string,
+) {
+  const possibleNotifications = await prisma.notification.findMany({
+    where: {
+      user: {
+        some: {
+          id: userid,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
   return possibleNotifications;
 };
 
-const removeNotification = async function removeThisNotificationByUser(userid: string, notifid: string) {
+const removeNotification = async function removeThisNotificationByUser(
+  userid: string,
+  notifid: string,
+) {
   const possibleUser = await prisma.user.update({
     where: {
-      id: userid
+      id: userid,
     },
     data: {
       notifications: {
         disconnect: {
-          id: notifid
-        }
-      }
+          id: notifid,
+        },
+      },
     },
     omit: {
-      password: true
+      password: true,
     },
   });
   return possibleUser;
 };
 
-const clearAllMyNotifications = async function removeAllNotificationsOfUser(userid: string) {
+const clearAllMyNotifications = async function removeAllNotificationsOfUser(
+  userid: string,
+) {
   const possibleUser = prisma.user.update({
     where: {
-      id: userid
+      id: userid,
     },
     data: {
       notifications: {
-        set: []
-      }
+        set: [],
+      },
     },
     omit: {
-      password: true
+      password: true,
     },
   });
   return possibleUser;
 };
 
-const getSelfIconsInfo = async function getAllIconsInfoFromUser(userid: string) {
+const getSelfIconsInfo = async function getAllIconsInfoFromUser(
+  userid: string,
+) {
   const userInfo = await prisma.user.findFirst({
     where: {
       id: userid,
@@ -131,7 +161,6 @@ const getIconInfo = async function getIconFromId(iconid: number) {
 
   return iconInfo;
 };
-
 
 const deleteCustomIcon = async function deleteCustomIconWhenNormalIconIsChosen(
   customid: string,
@@ -179,150 +208,164 @@ const changeUserInfo = async function updateUserDetails(
     include: {
       icon: {
         select: {
-          source: true
-        }
+          source: true,
+        },
       },
       customIcon: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
     },
     omit: {
-      password: true
-    }
+      password: true,
+    },
   });
 
   return updatedUser;
 };
 
-const getUserReceivedRequests = async function getAllReceivedRequestsOfUser(userid: string) {
+const getUserReceivedRequests = async function getAllReceivedRequestsOfUser(
+  userid: string,
+) {
   const possibleRequests = await prisma.request.findMany({
     where: {
-      targetid: userid
+      targetid: userid,
     },
     orderBy: {
-      sentAt: "desc"
+      sentAt: "desc",
     },
     include: {
       sender: {
         select: {
           username: true,
           id: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return possibleRequests;
 };
 
-const getUserSentRequests = async function getAllSentRequestsByUser(userid: string) {
+const getUserSentRequests = async function getAllSentRequestsByUser(
+  userid: string,
+) {
   const possibleRequests = await prisma.request.findMany({
     where: {
-      senderid: userid
+      senderid: userid,
     },
     orderBy: {
-      sentAt: "desc"
+      sentAt: "desc",
     },
     include: {
       target: {
         select: {
           username: true,
           id: true,
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   return possibleRequests;
 };
 
-const deleteThisRequest = async function deleteRequestWhereUserIsPresent(userid: string, requestid: string, userType?: requestUsers ) {
+const deleteThisRequest = async function deleteRequestWhereUserIsPresent(
+  userid: string,
+  requestid: string,
+  userType?: requestUsers,
+) {
   const possibleRequest = await prisma.request.delete({
     where: {
       id: requestid,
-      ...(typeof userType === "string" 
+      ...(typeof userType === "string"
         ? { [userType]: userid }
         : {
-          OR: [
-            {
-              targetid: userid
-            },
-            {
-              senderid: userid
-            }
-        ]}
-      ),
-    }
+            OR: [
+              {
+                targetid: userid,
+              },
+              {
+                senderid: userid,
+              },
+            ],
+          }),
+    },
   });
 
   return possibleRequest;
 };
 
-const createFollowship = async function makeUserFollowAnotherUser(senderid: string, targetid: string) {
+const createFollowship = async function makeUserFollowAnotherUser(
+  senderid: string,
+  targetid: string,
+) {
   const possibleUser = await prisma.user.update({
     where: {
-      id: targetid
+      id: targetid,
     },
     data: {
       followers: {
         connect: {
-          id: senderid
-        }
-      }
+          id: senderid,
+        },
+      },
     },
-  select: {
+    select: {
       _count: {
         select: {
-          followers: true
-        }
+          followers: true,
+        },
       },
       username: true,
       id: true,
       icon: {
         select: {
-          source: true
-        }
+          source: true,
+        },
       },
       customIcon: {
         select: {
-          url: true
-        }
-      }
-    }
+          url: true,
+        },
+      },
+    },
   });
 
   return possibleUser;
 };
 
-const stopFollowship = async function makeUserStopFollowAnotherUser(userid: string, targetid: string) {
+const stopFollowship = async function makeUserStopFollowAnotherUser(
+  userid: string,
+  targetid: string,
+) {
   const possibleUser = await prisma.user.update({
     where: {
       id: targetid,
       followers: {
         some: {
-          id: userid
-        }
-      }
+          id: userid,
+        },
+      },
     },
     data: {
       followers: {
         disconnect: {
-          id: userid
-        }
-      }
+          id: userid,
+        },
+      },
     },
     omit: {
-      password: true
+      password: true,
     },
     include: {
       _count: {
         select: {
-          followers: true
-        }
-      }
-    }
+          followers: true,
+        },
+      },
+    },
   });
 
   return possibleUser;
@@ -331,147 +374,167 @@ const stopFollowship = async function makeUserStopFollowAnotherUser(userid: stri
 const makeRequest = async function makeRequestByUser(options: RequestOptions) {
   const possibleRequest = await prisma.request.create({
     data: {
-      ...options
+      ...options,
     },
     include: {
       sender: {
         select: {
           username: true,
           id: true,
-        }
+        },
       },
-    }
+    },
   });
 
   return possibleRequest;
 };
 
-const createNotification = async function createNotificationForAction(options: NotificationsOptions) {
+const createNotification = async function createNotificationForAction(
+  options: NotificationsOptions,
+) {
   const createdNotification = await prisma.notification.create({
     data: {
       createdAt: options.createdAt,
       content: options.content,
       type: options.type,
-      ...(typeof options.typeid === "string" ? {typeid: options.typeid} : {}),
+      ...(typeof options.typeid === "string" ? { typeid: options.typeid } : {}),
       user: {
-        connect: options.usersid.map(user => ({id: user})) || []
-      }
-    }
+        connect: options.usersid.map((user) => ({ id: user })) || [],
+      },
+    },
   });
   return createdNotification;
 };
 
-const getSomeUsers = async function getSomeUsersFromDatabase(options: SearchOptions, extra: TakeAndSkip) {
+const getSomeUsers = async function getSomeUsersFromDatabase(
+  options: SearchOptions,
+  extra: TakeAndSkip,
+) {
   const possibleUsers = prisma.user.findMany({
     where: {
-      ...(typeof options.username === "string" ? {
-        username: {
-          contains: options.username
-        }
-      } : {}),
-      ...(typeof options.userid === "string" ? {
-          id: {
-            not: options.userid
+      ...(typeof options.username === "string"
+        ? {
+            username: {
+              contains: options.username,
+            },
           }
-      } : {}),
+        : {}),
+      ...(typeof options.userid === "string"
+        ? {
+            id: {
+              not: options.userid,
+            },
+          }
+        : {}),
     },
     orderBy: {
-      username: "asc"
+      username: "asc",
     },
     include: {
-        ...(typeof options.userid === "string" ? {
-          receivedRequests: {
-            where: {
-              senderid: options.userid,
-              type: "FOLLOW"
+      ...(typeof options.userid === "string"
+        ? {
+            receivedRequests: {
+              where: {
+                senderid: options.userid,
+                type: "FOLLOW",
+              },
+              select: {
+                id: true,
+              },
             },
-            select: {
-              id: true,
-            },
-          },
-          followers: {
-            where: {
-              id: options.userid
-            },
-            select: {
-              id: true,
+            followers: {
+              where: {
+                id: options.userid,
+              },
+              select: {
+                id: true,
+              },
             },
           }
-      } : {}),
+        : {}),
       icon: {
         select: {
-          source: true
-        }
+          source: true,
+        },
       },
       customIcon: {
         select: {
           url: true,
-        }
-      }
+        },
+      },
     },
     omit: {
       password: true,
     },
-    ...extra
+    ...extra,
   });
 
   return possibleUsers;
 };
 
-const getThisUser = async function getSpecificUser(userid: string, myId?: string) {
+const getThisUser = async function getSpecificUser(
+  userid: string,
+  myId?: string,
+) {
   const possibleUser = await prisma.user.findFirst({
     where: {
-      id: userid
+      id: userid,
     },
     include: {
       _count: {
         select: {
           followers: true,
-        }
+        },
       },
       icon: {
         select: {
           id: true,
           source: true,
-        }
+        },
       },
       customIcon: {
         select: {
           url: true,
         },
       },
-      ...(typeof myId === "string" ? {
-        receivedRequests: {
-          where: {
-            senderid: myId,
-            type: "FOLLOW"
-          },
-          select: {
-            id: true,
-          },
-        },
-        followers: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true,
-          },
-      }
-      } : {}),
+      ...(typeof myId === "string"
+        ? {
+            receivedRequests: {
+              where: {
+                senderid: myId,
+                type: "FOLLOW",
+              },
+              select: {
+                id: true,
+              },
+            },
+            followers: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
+          }
+        : {}),
     },
     omit: {
-      password: true
+      password: true,
     },
   });
-  
+
   return possibleUser;
 };
 
-const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra: TakeAndSkip, myId?: string) {
+const getThisUserPosts = async function getAllOfUserPosts(
+  userid: string,
+  extra: TakeAndSkip,
+  myId?: string,
+) {
   const possiblePosts = await prisma.post.findMany({
     where: {
-      creatorid: userid
+      creatorid: userid,
     },
     include: {
       _count: {
@@ -480,27 +543,29 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra:
           comments: {
             where: {
               comment: {
-                is: null
-              }
-            }
-          }
-        }
+                is: null,
+              },
+            },
+          },
+        },
       },
       image: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
-      ...(typeof myId === "string" ?
-        {likes: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true
+      ...(typeof myId === "string"
+        ? {
+            likes: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       creator: {
         select: {
           id: true,
@@ -508,31 +573,36 @@ const getThisUserPosts = async function getAllOfUserPosts(userid: string, extra:
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
               url: true,
             },
           },
-        }
-      }
+        },
+      },
     },
     orderBy: {
-      createdAt: "desc"
+      createdAt: "desc",
     },
-    ...extra
+    ...extra,
   });
   return possiblePosts;
 };
 
-const getMyFollowships = async function getAllOfUserFollowships(userid: string, type: followTypes, extra: TakeAndSkip, options?: string) {
+const getMyFollowships = async function getAllOfUserFollowships(
+  userid: string,
+  type: followTypes,
+  extra: TakeAndSkip,
+  options?: string,
+) {
   const possibleFollowers = await prisma.user.findMany({
     where: {
       [type]: {
         some: {
-          id: userid
-        }
+          id: userid,
+        },
       },
     },
     select: {
@@ -541,40 +611,45 @@ const getMyFollowships = async function getAllOfUserFollowships(userid: string, 
       icon: {
         select: {
           source: true,
-        }
+        },
       },
       customIcon: {
         select: {
           url: true,
-        }
-      },
-      ...(typeof options === "string" ? {
-        receivedRequests: {
-          where: {
-            senderid: userid,
-            type: "FOLLOW"
-          },
-          select: {
-            id: true,
-          },
         },
-        followers: {
-          where: {
-            id: userid
-          },
-          select: {
-            id: true,
-          },
-      }
-      } : {}),
+      },
+      ...(typeof options === "string"
+        ? {
+            receivedRequests: {
+              where: {
+                senderid: userid,
+                type: "FOLLOW",
+              },
+              select: {
+                id: true,
+              },
+            },
+            followers: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
+          }
+        : {}),
     },
-    ...extra
+    ...extra,
   });
 
   return possibleFollowers;
 };
 
-const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: TakeAndSkip) {
+const getUserFeed = async function getSomeOfUserFeed(
+  userid: string,
+  extra: TakeAndSkip,
+) {
   const myFeed = await prisma.post.findMany({
     where: {
       creator: {
@@ -582,21 +657,21 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
           {
             followers: {
               some: {
-                id: userid
-              }
+                id: userid,
+              },
             },
           },
           {
-            id: userid
-          }
-        ]
-      }
+            id: userid,
+          },
+        ],
+      },
     },
     include: {
       image: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
       _count: {
         select: {
@@ -604,22 +679,24 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
           comments: {
             where: {
               comment: {
-                is: null
-              }
-            }
-          }
-        }
-      },
-      ...(typeof userid === "string" ?
-        {likes: {
-          where: {
-            id: userid
+                is: null,
+              },
+            },
           },
-          select: {
-            id: true
+        },
+      },
+      ...(typeof userid === "string"
+        ? {
+            likes: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       creator: {
         select: {
           id: true,
@@ -627,18 +704,18 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
               url: true,
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     },
     orderBy: {
-      createdAt: "desc"
+      createdAt: "desc",
     },
     ...extra,
   });
@@ -646,62 +723,68 @@ const getUserFeed = async function getSomeOfUserFeed(userid: string, extra: Take
   return myFeed;
 };
 
-const getImagesInPostForDelete = async function getAllImagesInPostForDeletePurposes(userid: string, postid: string) {
-  const allImages = await prisma.customImage.findMany({
-    where: {
-      OR: [
-      {
-        comment: {
-          AND: [
-            {
-              postid,
-            },
-            {
-              post:  
-                {
-                  creatorid: userid
-                }
-            }
-          ]
-        }
-      },
-      {
-        AND: [
+const getImagesInPostForDelete =
+  async function getAllImagesInPostForDeletePurposes(
+    userid: string,
+    postid: string,
+  ) {
+    const allImages = await prisma.customImage.findMany({
+      where: {
+        OR: [
           {
-            postid,
+            comment: {
+              AND: [
+                {
+                  postid,
+                },
+                {
+                  post: {
+                    creatorid: userid,
+                  },
+                },
+              ],
+            },
           },
           {
-            post: {
-              creatorid: userid
-            }
-          }
-        ]
-      }
-    ]
-  }
-})
+            AND: [
+              {
+                postid,
+              },
+              {
+                post: {
+                  creatorid: userid,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
 
-  return allImages;
-};
+    return allImages;
+  };
 
-const deleteThisPost = async function deleteThisPostByUser(userid: string, postid: string) {
+const deleteThisPost = async function deleteThisPostByUser(
+  userid: string,
+  postid: string,
+) {
   const deletedPost = await prisma.post.delete({
     where: {
       creatorid: userid,
-      id: postid
+      id: postid,
     },
     include: {
       comments: {
         select: {
-          image: true
+          image: true,
         },
         where: {
           image: {
-            isNot: null
-          }
-        }
+            isNot: null,
+          },
+        },
       },
-      image: true
+      image: true,
     },
   });
 
@@ -713,22 +796,24 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
     data: {
       creator: {
         connect: {
-          id: options.userid
-        }
+          id: options.userid,
+        },
       },
       createdAt: options.createdAt,
       content: options.content,
-      ...(options.fileInfo ? {
-        image: {
-          create: {
-            url: options.fileInfo.secure_url,
-            public_id: options.fileInfo.public_id,
-            uploadAt: options.fileInfo.created_at,
+      ...(options.fileInfo
+        ? {
+            image: {
+              create: {
+                url: options.fileInfo.secure_url,
+                public_id: options.fileInfo.public_id,
+                uploadAt: options.fileInfo.created_at,
+              },
+            },
           }
-        }
-      }: {})
+        : {}),
     },
-    include:  {
+    include: {
       creator: {
         select: {
           id: true,
@@ -736,59 +821,65 @@ const createThisPost = async function createPostForUser(options: PostOptions) {
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
-              url: true
-            }
-          }
+              url: true,
+            },
+          },
         },
       },
       image: {
         select: {
-          url: true
-        }
-      }
-    }
+          url: true,
+        },
+      },
+    },
   });
 
   return createdPost;
 };
 
-const getThisPostComments = async function getDirectCommentsOfThisPost(postid: string, extra: TakeAndSkip, myId?: string) {
+const getThisPostComments = async function getDirectCommentsOfThisPost(
+  postid: string,
+  extra: TakeAndSkip,
+  myId?: string,
+) {
   const possibleComments = await prisma.comment.findMany({
     ...extra,
-     orderBy: {
-      sentAt: "desc"
+    orderBy: {
+      sentAt: "desc",
     },
     where: {
       comment: {
-        is: null
+        is: null,
       },
-      postid
+      postid,
     },
     include: {
       image: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
-      ...(typeof myId === "string" ?
-        {likes: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true
+      ...(typeof myId === "string"
+        ? {
+            likes: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       _count: {
         select: {
           likes: true,
           ownComments: true,
-        }
+        },
       },
       sender: {
         select: {
@@ -797,53 +888,58 @@ const getThisPostComments = async function getDirectCommentsOfThisPost(postid: s
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
               url: true,
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
 
   return possibleComments;
 };
 
-const getThisPost = async function getSpecificPostFromDatabase(postid: string, myId?: string) {
+const getThisPost = async function getSpecificPostFromDatabase(
+  postid: string,
+  myId?: string,
+) {
   const possiblePost = await prisma.post.findFirst({
     where: {
-      id: postid
+      id: postid,
     },
     include: {
       image: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
-      ...(typeof myId === "string" ?
-        {likes: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true
+      ...(typeof myId === "string"
+        ? {
+            likes: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       _count: {
         select: {
           likes: true,
           comments: {
             where: {
               comment: {
-                is: null
-              }
-            }
-          }
-        }
+                is: null,
+              },
+            },
+          },
+        },
       },
       creator: {
         select: {
@@ -852,22 +948,26 @@ const getThisPost = async function getSpecificPostFromDatabase(postid: string, m
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
-              url: true
-            }
-          }
+              url: true,
+            },
+          },
         },
-      }
-    }
+      },
+    },
   });
 
   return possiblePost;
 };
 
-const updatePostContent = async function updateContentOfSpecificPostByUser(userid: string, postid: string, content: string) {
+const updatePostContent = async function updateContentOfSpecificPostByUser(
+  userid: string,
+  postid: string,
+  content: string,
+) {
   const updatedPost = await prisma.post.update({
     data: {
       content,
@@ -880,23 +980,25 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
     include: {
       image: {
         select: {
-          url: true
-        }
+          url: true,
+        },
       },
-      ...(typeof userid === "string" ?
-        {likes: {
-          where: {
-            id: userid
-          },
-          select: {
-            id: true
+      ...(typeof userid === "string"
+        ? {
+            likes: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       _count: {
         select: {
           likes: true,
-        }
+        },
       },
       creator: {
         select: {
@@ -905,22 +1007,26 @@ const updatePostContent = async function updateContentOfSpecificPostByUser(useri
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
-              url: true
-            }
-          }
+              url: true,
+            },
+          },
         },
-      }
-    }
+      },
+    },
   });
-  
+
   return updatedPost;
 };
 
-const changePostLike = async function changeLikeOfUserOnPost(userid: string, postid: string, action: likeActions) {
+const changePostLike = async function changeLikeOfUserOnPost(
+  userid: string,
+  postid: string,
+  action: likeActions,
+) {
   const changedPost = await prisma.post.update({
     where: {
       id: postid,
@@ -928,33 +1034,37 @@ const changePostLike = async function changeLikeOfUserOnPost(userid: string, pos
     data: {
       likes: {
         [action]: {
-          id: userid
-        }
-      }
+          id: userid,
+        },
+      },
     },
     include: {
-      ...(typeof userid === "string" ?
-        {likes: {
-          where: {
-            id: userid
-          },
-          select: {
-            id: true
+      ...(typeof userid === "string"
+        ? {
+            likes: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       _count: {
         select: {
-          likes: true
-        }
-      }
-    }
+          likes: true,
+        },
+      },
+    },
   });
 
   return changedPost;
 };
 
-const createThisComment = async function createCommentOnPostAndOrComment(options: PostOptions & CommentOptions) {
+const createThisComment = async function createCommentOnPostAndOrComment(
+  options: PostOptions & CommentOptions,
+) {
   const updatedPost = await prisma.post.update({
     data: {
       comments: {
@@ -963,50 +1073,48 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
           sentAt: options.createdAt,
           sender: {
             connect: {
-              id: options.userid
-            }
+              id: options.userid,
+            },
           },
-          ...(typeof options.commentid === "string" 
-            ? 
-            {
-              comment: {
-                connect: {
-                  id: options.commentid
-                }
+          ...(typeof options.commentid === "string"
+            ? {
+                comment: {
+                  connect: {
+                    id: options.commentid,
+                  },
+                },
               }
-            }
             : {}),
-          ...(options.fileInfo ? {
-            image: {
-              create: {
-                url: options.fileInfo.secure_url,
-                public_id: options.fileInfo.public_id,
-                uploadAt: options.fileInfo.created_at,
+          ...(options.fileInfo
+            ? {
+                image: {
+                  create: {
+                    url: options.fileInfo.secure_url,
+                    public_id: options.fileInfo.public_id,
+                    uploadAt: options.fileInfo.created_at,
+                  },
+                },
               }
-            }
-          }: {})
-        }
-      }
-
+            : {}),
+        },
+      },
     },
     where: {
       id: options.postid,
       ...(typeof options.commentid === "string"
-        ? 
-        {
-          comments: {
-            some: {
-              id: options.commentid
-            }
+        ? {
+            comments: {
+              some: {
+                id: options.commentid,
+              },
+            },
           }
-        }
-        : {}
-      )
+        : {}),
     },
     include: {
       comments: {
         orderBy: {
-          sentAt: "desc"
+          sentAt: "desc",
         },
         take: 1,
         include: {
@@ -1014,22 +1122,22 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
             select: {
               sender: {
                 select: {
-                  id: true
-                }
+                  id: true,
+                },
               },
-              id: true
-            }
+              id: true,
+            },
           },
           image: {
             select: {
-              url: true
-            }
+              url: true,
+            },
           },
           _count: {
             select: {
               likes: true,
               ownComments: true,
-            }
+            },
           },
           sender: {
             select: {
@@ -1038,154 +1146,60 @@ const createThisComment = async function createCommentOnPostAndOrComment(options
               icon: {
                 select: {
                   source: true,
-                }
+                },
               },
               customIcon: {
                 select: {
                   url: true,
-                }
-              }
-            }
-          }
+                },
+              },
+            },
+          },
         },
       },
-    }
+    },
   });
 
   return updatedPost;
 };
 
-const updateThisComment = async function updateCommentByUser(userid: string, commentid: string, content: string) {
+const updateThisComment = async function updateCommentByUser(
+  userid: string,
+  commentid: string,
+  content: string,
+) {
   const updatedComment = await prisma.comment.update({
-    where: {
-      id: commentid,
-      senderid: userid
-    },
-    data: {
-      content,
-      edited: true
-    },
-    include: {
-          image: {
-            select: {
-              url: true
-            }
-          },
-          ...(typeof userid === "string" ?
-          {likes: {
-            where: {
-              id: userid
-            },
-            select: {
-              id: true
-            }
-          }} : {}
-        ),
-          _count: {
-            select: {
-              likes: true,
-              ownComments: true,
-            }
-          },
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              icon: {
-                select: {
-                  source: true,
-                }
-              },
-              customIcon: {
-                select: {
-                  url: true,
-                }
-              }
-            }
-          }
-        }
-  })
-  return updatedComment;
-};
-
-const deleteThisComment = async function deleteCommentByUser(userid: string, commentid: string) {
-  const deletedComment = await prisma.comment.delete({
     where: {
       id: commentid,
       senderid: userid,
     },
-    include: {
-      image: true
-    }
-  });
-
-  return deletedComment;
-};
-
-const changeCommentLike = async function changeLikeOfUserOnComment(userid: string, commentid: string, action: likeActions) {
-const changedComment = await prisma.comment.update({
-    where: {
-      id: commentid,
-    },
     data: {
-      likes: {
-        [action]: {
-          id: userid
-        }
-      }
+      content,
+      edited: true,
     },
     include: {
-      ...(typeof userid === "string" ?
-        {likes: {
-          where: {
-            id: userid
-          },
-          select: {
-            id: true
-          }
-        }} : {}
-      ),
-      _count: {
+      image: {
         select: {
-          likes: true
-        }
-      }
-    }
-  });
-
-  return changedComment;
-};
-
-const getThisCommentComments = async function getCommentsFromComment(commentid: string, extra: TakeAndSkip, myId?: string) {
-  const commentsData = await prisma.comment.findMany({
-    where: {
-      commentid
-    },
-    ...extra,
-    orderBy: {
-      sentAt: "asc"
-    },
-    include: {
-      ...(typeof myId === "string" ?
-        {likes: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true
+          url: true,
+        },
+      },
+      ...(typeof userid === "string"
+        ? {
+            likes: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
       _count: {
         select: {
           likes: true,
-          ownComments: true
-        }
-      },
-      image: {
-        select: {
-          url: true
-        }
+          ownComments: true,
+        },
       },
       sender: {
         select: {
@@ -1194,47 +1208,113 @@ const getThisCommentComments = async function getCommentsFromComment(commentid: 
           icon: {
             select: {
               source: true,
-            }
+            },
           },
           customIcon: {
             select: {
               url: true,
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   });
-
-  return commentsData;
+  return updatedComment;
 };
 
-const getThisComment = async function getCommentAndItsChildren(commentid: string, myId?:string) {
-  const commentData = await prisma.comment.findFirst({
+const deleteThisComment = async function deleteCommentByUser(
+  userid: string,
+  commentid: string,
+) {
+  const deletedComment = await prisma.comment.delete({
     where: {
-      id: commentid
+      id: commentid,
+      senderid: userid,
     },
     include: {
-      image: {
-        select: {
-          url: true,
-        }
+      image: true,
+    },
+  });
+
+  return deletedComment;
+};
+
+const changeCommentLike = async function changeLikeOfUserOnComment(
+  userid: string,
+  commentid: string,
+  action: likeActions,
+) {
+  const changedComment = await prisma.comment.update({
+    where: {
+      id: commentid,
+    },
+    data: {
+      likes: {
+        [action]: {
+          id: userid,
+        },
       },
-      ...(typeof myId === "string" ?
-        {likes: {
-          where: {
-            id: myId
-          },
-          select: {
-            id: true
+    },
+    include: {
+      ...(typeof userid === "string"
+        ? {
+            likes: {
+              where: {
+                id: userid,
+              },
+              select: {
+                id: true,
+              },
+            },
           }
-        }} : {}
-      ),
+        : {}),
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+    },
+  });
+
+  return changedComment;
+};
+
+const getThisCommentComments = async function getCommentsFromComment(
+  commentid: string,
+  extra: TakeAndSkip,
+  myId?: string,
+) {
+  const commentsData = await prisma.comment.findMany({
+    where: {
+      commentid,
+    },
+    ...extra,
+    orderBy: {
+      sentAt: "asc",
+    },
+    include: {
+      ...(typeof myId === "string"
+        ? {
+            likes: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
+          }
+        : {}),
       _count: {
         select: {
           likes: true,
           ownComments: true,
-        }
+        },
+      },
+      image: {
+        select: {
+          url: true,
+        },
       },
       sender: {
         select: {
@@ -1242,50 +1322,109 @@ const getThisComment = async function getCommentAndItsChildren(commentid: string
           username: true,
           icon: {
             select: {
-              source: true
-            }
+              source: true,
+            },
           },
-          customIcon:  {
+          customIcon: {
             select: {
               url: true,
-            }
-          }
-        }
+            },
+          },
+        },
       },
-    }
+    },
+  });
+
+  return commentsData;
+};
+
+const getThisComment = async function getCommentAndItsChildren(
+  commentid: string,
+  myId?: string,
+) {
+  const commentData = await prisma.comment.findFirst({
+    where: {
+      id: commentid,
+    },
+    include: {
+      image: {
+        select: {
+          url: true,
+        },
+      },
+      ...(typeof myId === "string"
+        ? {
+            likes: {
+              where: {
+                id: myId,
+              },
+              select: {
+                id: true,
+              },
+            },
+          }
+        : {}),
+      _count: {
+        select: {
+          likes: true,
+          ownComments: true,
+        },
+      },
+      sender: {
+        select: {
+          id: true,
+          username: true,
+          icon: {
+            select: {
+              source: true,
+            },
+          },
+          customIcon: {
+            select: {
+              url: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return commentData;
 };
 
-const getAllFollowsForIo = async function getFollowsForSocketStuff(userid: string, type: "followers" | "follows") {
+const getAllFollowsForIo = async function getFollowsForSocketStuff(
+  userid: string,
+  type: "followers" | "follows",
+) {
   const allFollows = await prisma.user.findMany({
     where: {
       [type]: {
         some: {
-          id: userid
-        }
-      }
+          id: userid,
+        },
+      },
     },
     select: {
-      id: true
-    }
+      id: true,
+    },
   });
 
   return allFollows;
 };
 
-
-const getFollowshipForCheck = async function getFollowshipForCheckingPurposes(userid:string, targetid: string) {
+const getFollowshipForCheck = async function getFollowshipForCheckingPurposes(
+  userid: string,
+  targetid: string,
+) {
   const thisUser = await prisma.user.findFirst({
     where: {
       id: userid,
       follows: {
         some: {
-          id: targetid
-        }
-      }
-    }
+          id: targetid,
+        },
+      },
+    },
   });
 
   return thisUser;
@@ -1296,38 +1435,52 @@ const getAllIcons = async function getAllIconsFromDb() {
   return allIcons;
 };
 
-const getCommentForCheck = async function getThisCommentToCheckParent(id: string) {
+const getCommentForCheck = async function getThisCommentToCheckParent(
+  id: string,
+) {
   const possibleComment = await prisma.comment.findFirst({
     where: {
-      id
-    }
+      id,
+    },
   });
 
   return possibleComment;
 };
 
-const checkNotifications = async function checkIfNotificationsExist({user, type, id, content}: {user: string, type: notificationTypes, id?: string, content: string}) {
+const checkNotifications = async function checkIfNotificationsExist({
+  user,
+  type,
+  id,
+  content,
+}: {
+  user: string;
+  type: notificationTypes;
+  id?: string;
+  content: string;
+}) {
   const possibleNotifications = await prisma.notification.findMany({
     where: {
       user: {
         some: {
-          id: user
-        }
+          id: user,
+        },
       },
       type,
-      ...(typeof id === "string" ? {
-        typeid: id
-      } : {}),
+      ...(typeof id === "string"
+        ? {
+            typeid: id,
+          }
+        : {}),
       content: {
-        contains: content
-      }
+        contains: content,
+      },
     },
     orderBy: {
-      createdAt: "desc"
+      createdAt: "desc",
     },
-    take: 1
+    take: 1,
   });
-  
+
   return possibleNotifications;
 };
 
@@ -1378,5 +1531,5 @@ export {
   getThisCommentComments,
   getThisPostComments,
   getCommentForCheck,
-  checkNotifications
+  checkNotifications,
 };

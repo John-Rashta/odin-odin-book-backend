@@ -1,4 +1,4 @@
-import request from 'supertest';
+import request from "supertest";
 import app, { storeStuff } from "../util/tesconfig";
 import { deleteEverything } from "../util/queries";
 
@@ -18,7 +18,6 @@ describe("Basic API functionality", () => {
   const userOne = request.agent(server);
   const userTwo = request.agent(server);
   const userError = request.agent(server);
-  const userGuest = request.agent(server);
   const userTwoInfo: {
     id?: string;
     requestid?: string;
@@ -36,18 +35,6 @@ describe("Basic API functionality", () => {
     commentid?: string;
     deletePostid?: string;
   } = {};
-
-  test("login guest", (done) => {
-    userGuest
-      .put("/auth")
-      .expect("Content-Type", /json/)
-      .expect(200)
-      .then((res) => {
-        expect(res.body).toHaveProperty("id");
-        expect(res.body.id).toEqual("guest");
-        done();
-      });
-  });
 
   test("create User", (done) => {
     userOne
@@ -115,7 +102,7 @@ describe("Basic API functionality", () => {
       });
   });
 
-   test("get self info", (done) => {
+  test("get self info", (done) => {
     userOne
       .get("/users/self")
       .expect("Content-Type", /json/)
@@ -126,12 +113,12 @@ describe("Basic API functionality", () => {
       });
   });
 
-   ///ERROR TEST
+  ///ERROR TEST
   test("cant get user that doesn't exist", (done) => {
     userOne
       .get(`/users/${testUUID}`)
       .expect("Content-Type", /json/)
-      .expect({message: "User not found."})
+      .expect({ message: "User not found." })
       .expect(400, done);
   });
 
@@ -250,7 +237,7 @@ describe("Basic API functionality", () => {
       .expect(500, done);
   });
 
-   test("get requests", (done) => {
+  test("get requests", (done) => {
     userTwo
       .get("/requests")
       .expect("Content-Type", /json/)
@@ -260,7 +247,7 @@ describe("Basic API functionality", () => {
         userTwoInfo.requestid = res.body.received[0].id;
         done();
       });
-    });
+  });
 
   ///ERROR TEST
   test("can't accept own request", (done) => {
@@ -289,30 +276,30 @@ describe("Basic API functionality", () => {
   });
 
   test("get follows", (done) => {
-        userOne
-            .get("/users/self/follows")
-            .expect("Content-Type", /json/)
-            .expect(200)
-            .then((res) => {
-                expect(res.body).toHaveProperty("follows");
-                expect(res.body.follows[0].id).toEqual(userTwoInfo.id);
-                done();
-            });
-    });
+    userOne
+      .get("/users/self/follows")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("follows");
+        expect(res.body.follows[0].id).toEqual(userTwoInfo.id);
+        done();
+      });
+  });
 
-    test("get followers", (done) => {
-        userTwo
-            .get("/users/self/followers")
-            .expect("Content-Type", /json/)
-            .expect(200)
-            .then((res) => {
-                expect(res.body).toHaveProperty("followers");
-                expect(res.body.followers[0].id).toEqual(userOneInfo.id);
-                done();
-            });
-    });
+  test("get followers", (done) => {
+    userTwo
+      .get("/users/self/followers")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("followers");
+        expect(res.body.followers[0].id).toEqual(userOneInfo.id);
+        done();
+      });
+  });
 
-   ///ERROR TEST
+  ///ERROR TEST
   test("Can't send follow request if already follows", (done) => {
     userOne
       .post("/requests")
@@ -324,7 +311,7 @@ describe("Basic API functionality", () => {
       .expect(400, done);
   });
 
-   test("send mutual follow request", (done) => {
+  test("send mutual follow request", (done) => {
     userTwo
       .post("/requests")
       .send({
@@ -333,9 +320,9 @@ describe("Basic API functionality", () => {
       })
       .expect("Content-Type", /json/)
       .expect(200, done);
-    });
+  });
 
-    test("get requests", (done) => {
+  test("get requests", (done) => {
     userOne
       .get("/requests")
       .expect("Content-Type", /json/)
@@ -345,16 +332,16 @@ describe("Basic API functionality", () => {
         userOneInfo.requestid = res.body.received[0].id;
         done();
       });
-    });
+  });
 
-     test("accept mutual follow request", (done) => {
+  test("accept mutual follow request", (done) => {
     userOne
       .put(`/requests/${userOneInfo.requestid}`)
       .expect("Content-Type", /json/)
       .expect(200, done);
-    });
+  });
 
-   test("get follows", (done) => {
+  test("get follows", (done) => {
     userTwo
       .get("/users/self/follows")
       .expect("Content-Type", /json/)
@@ -366,7 +353,7 @@ describe("Basic API functionality", () => {
       });
   });
 
-    test("get followers", (done) => {
+  test("get followers", (done) => {
     userOne
       .get("/users/self/followers")
       .expect("Content-Type", /json/)
@@ -376,20 +363,20 @@ describe("Basic API functionality", () => {
         expect(res.body.followers[0].id).toEqual(userTwoInfo.id);
         done();
       });
-    });
+  });
 
-    test("get icons", (done) => {
-      userOne
-        .get(`/users/icons`)
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty("icons");
-          done();
-        });
-    });
+  test("get icons", (done) => {
+    userOne
+      .get(`/users/icons`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("icons");
+        done();
+      });
+  });
 
-    test("search user by string", (done) => {
+  test("search user by string", (done) => {
     userOne
       .get(`/users/search`)
       .query({ user: "d" })
@@ -399,9 +386,9 @@ describe("Basic API functionality", () => {
         expect(res.body).toHaveProperty("users");
         done();
       });
-    });
+  });
 
-    test("search user by id", (done) => {
+  test("search user by id", (done) => {
     userOne
       .get(`/users/search`)
       .query({ user: userTwoInfo.id })
@@ -409,54 +396,54 @@ describe("Basic API functionality", () => {
       .expect(200)
       .then((res) => {
         expect(res.body).toHaveProperty("users");
-        expect(res.body.users[0].username).toEqual("garrosh")
+        expect(res.body.users[0].username).toEqual("garrosh");
         done();
       });
-    });
+  });
 
-     test("search user with invalid value", (done) => {
+  test("search user with invalid value", (done) => {
     userOne
       .get(`/users/search`)
       .query({ user: "d   sadsa !!!" })
       .expect("Content-Type", /json/)
       .expect(400, done);
-    });
+  });
 
-    test("Get users with normal route", (done) => {
-      userOne
-        .get("/users?skip=5&amount=10")
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty("users");
-          done();
-        });
-    });
+  test("Get users with normal route", (done) => {
+    userOne
+      .get("/users?skip=5&amount=10")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("users");
+        done();
+      });
+  });
 
-    test("Get users without extra options", (done) => {
-      userOne
-        .get("/users")
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty("users");
-          done();
-        });
-    });
+  test("Get users without extra options", (done) => {
+    userOne
+      .get("/users")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("users");
+        done();
+      });
+  });
 
-    test("Get user posts", (done) => {
-      userOne
-        .get(`/users/${userTwoInfo.id}/posts`)
-         .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toHaveProperty("posts");
-          done();
-        });
-    });
+  test("Get user posts", (done) => {
+    userOne
+      .get(`/users/${userTwoInfo.id}/posts`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("posts");
+        done();
+      });
+  });
 
-     test("update user info", (done) => {
-      userOne
+  test("update user info", (done) => {
+    userOne
       .put(`/users/self`)
       .send({
         username: "blueeyes",
@@ -470,7 +457,7 @@ describe("Basic API functionality", () => {
   });
 
   test("update aboutme to be empty again", (done) => {
-      userOne
+    userOne
       .put(`/users/self`)
       .send({
         aboutMe: "",
@@ -478,7 +465,6 @@ describe("Basic API functionality", () => {
       .expect("Content-Type", /json/)
       .expect(200, done);
   });
-
 
   test("update profile with custom file", (done) => {
     userOne
@@ -489,7 +475,7 @@ describe("Basic API functionality", () => {
       .expect(200, done);
   });
 
-   ///ERROR TEST
+  ///ERROR TEST
   test("testing if helper delete functions work properly", (done) => {
     userOne
       .put("/users/self")
@@ -511,16 +497,15 @@ describe("Basic API functionality", () => {
       .expect(400, done);
   });
 
-    test("update profile back to icon", (done) => {
+  test("update profile back to icon", (done) => {
     userOne
       .put("/users/self")
       .send({
-        icon: 1
+        icon: 1,
       })
       .expect("Content-Type", /json/)
       .expect(200, done);
   });
-
 
   ///ERROR TEST
   test("Wrong query values", (done) => {
@@ -536,8 +521,8 @@ describe("Basic API functionality", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("feed");
-          done();
+        expect(res.body).toHaveProperty("feed");
+        done();
       });
   });
 
@@ -545,26 +530,26 @@ describe("Basic API functionality", () => {
     userOne
       .post("/posts")
       .send({
-        content: "my post here"
+        content: "my post here",
       })
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("postid");
-          userOneInfo.postid = res.body.postid;
-          done();
+        expect(res.body).toHaveProperty("postid");
+        userOneInfo.postid = res.body.postid;
+        done();
       });
   });
 
-   test("Create second post with just image", (done) => {
+  test("Create second post with just image", (done) => {
     userOne
       .post("/posts")
       .set("Content-Type", "multipart/form-data")
       .attach("uploaded_file", "util/pools/testStuff/waldo.png")
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("postid");
-          userOneInfo.deletePostid = res.body.postid;
-          done();
+        expect(res.body).toHaveProperty("postid");
+        userOneInfo.deletePostid = res.body.postid;
+        done();
       });
   });
 
@@ -573,11 +558,11 @@ describe("Basic API functionality", () => {
     userOne
       .post("/posts")
       .send({
-        content: ""
+        content: "",
       })
       .expect("Content-Type", /json/)
-      .expect({message: "Post can't be empty."})
-      .expect(400, done)
+      .expect({ message: "Post can't be empty." })
+      .expect(400, done);
   });
 
   test("Create post with image", (done) => {
@@ -588,9 +573,9 @@ describe("Basic API functionality", () => {
       .attach("uploaded_file", "util/pools/testStuff/waldo.png")
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("postid");
-          userTwoInfo.postid = res.body.postid;
-          done();
+        expect(res.body).toHaveProperty("postid");
+        userTwoInfo.postid = res.body.postid;
+        done();
       });
   });
 
@@ -600,34 +585,33 @@ describe("Basic API functionality", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("post");
-          done();
+        expect(res.body).toHaveProperty("post");
+        done();
       });
   });
 
   test("Get Post Comments", (done) => {
-     userOne
+    userOne
       .get(`/posts/${userOneInfo.postid}/comments`)
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("comments");
-          done();
+        expect(res.body).toHaveProperty("comments");
+        done();
       });
   });
 
-   test("Get comments from post that doesn't exist (shouldn't return error)", (done) => {
-     userOne
+  test("Get comments from post that doesn't exist (shouldn't return error)", (done) => {
+    userOne
       .get(`/posts/${testUUID}/comments`)
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("comments");
-          expect(res.body.comments.length).toEqual(0);
-          done();
+        expect(res.body).toHaveProperty("comments");
+        expect(res.body.comments.length).toEqual(0);
+        done();
       });
   });
-
 
   ///ERROR TEST
   test("Can't get post that doesn't exist", (done) => {
@@ -644,8 +628,8 @@ describe("Basic API functionality", () => {
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("posts");
-          done();
+        expect(res.body).toHaveProperty("posts");
+        done();
       });
   });
 
@@ -672,7 +656,7 @@ describe("Basic API functionality", () => {
   });
 
   ///ERROR TEST
-   test("can't edit to be empty", (done) => {
+  test("can't edit to be empty", (done) => {
     userOne
       .put(`/posts/${userOneInfo.postid}`)
       .send({
@@ -682,8 +666,7 @@ describe("Basic API functionality", () => {
       .expect(400, done);
   });
 
-
-   test("edit post with different content", (done) => {
+  test("edit post with different content", (done) => {
     userOne
       .put(`/posts/${userOneInfo.postid}`)
       .send({
@@ -698,7 +681,7 @@ describe("Basic API functionality", () => {
     userTwo
       .put(`/posts/${testUUID}/likes`)
       .send({
-        action: "ADD"
+        action: "ADD",
       })
       .expect("Content-Type", /json/)
       .expect(500, done);
@@ -708,7 +691,7 @@ describe("Basic API functionality", () => {
     userTwo
       .put(`/posts/${userOneInfo.postid}/likes`)
       .send({
-        action: "ADD"
+        action: "ADD",
       })
       .expect("Content-Type", /json/)
       .expect(200, done);
@@ -718,7 +701,7 @@ describe("Basic API functionality", () => {
     userTwo
       .put(`/posts/${userOneInfo.postid}/likes`)
       .send({
-        action: "REMOVE"
+        action: "REMOVE",
       })
       .expect("Content-Type", /json/)
       .expect(200, done);
@@ -729,29 +712,28 @@ describe("Basic API functionality", () => {
     userOne
       .post(`/posts/${testUUID}`)
       .send({
-        content: "hello"
+        content: "hello",
       })
       .expect("Content-Type", /json/)
       .expect(500, done);
   });
 
-
-   test("post a comment", (done) => {
+  test("post a comment", (done) => {
     userTwo
       .post(`/posts/${userOneInfo.postid}`)
       .send({
-        content: "hello"
+        content: "hello",
       })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("comment");
-          userTwoInfo.commentid = res.body.comment.id;
-          done();
+        expect(res.body).toHaveProperty("comment");
+        userTwoInfo.commentid = res.body.comment.id;
+        done();
       });
-    });
+  });
 
-    test("post a comment with image", (done) => {
+  test("post a comment with image", (done) => {
     userOne
       .post(`/posts/${userTwoInfo.postid}`)
       .set("Content-Type", "multipart/form-data")
@@ -759,245 +741,243 @@ describe("Basic API functionality", () => {
       .attach("uploaded_file", "util/pools/testStuff/waldo.png")
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("comment");
-          userOneInfo.commentid = res.body.comment.id;
-          done();
+        expect(res.body).toHaveProperty("comment");
+        userOneInfo.commentid = res.body.comment.id;
+        done();
       });
-    });
+  });
 
-       ///ERROR TEST
-    test("can't like comment that doesn't exist", (done) => {
-       userTwo
-        .put(`/comments/${testUUID}/likes`)
-        .send({
-          action: "ADD"
-        })
-        .expect("Content-Type", /json/)
-        .expect(500, done);
-    });
+  ///ERROR TEST
+  test("can't like comment that doesn't exist", (done) => {
+    userTwo
+      .put(`/comments/${testUUID}/likes`)
+      .send({
+        action: "ADD",
+      })
+      .expect("Content-Type", /json/)
+      .expect(500, done);
+  });
 
-    test("like comment", (done) => {
-       userTwo
-        .put(`/comments/${userOneInfo.commentid}/likes`)
-        .send({
-          action: "ADD"
-        })
-        .expect("Content-Type", /json/)
-        .expect(200, done);
-    });
+  test("like comment", (done) => {
+    userTwo
+      .put(`/comments/${userOneInfo.commentid}/likes`)
+      .send({
+        action: "ADD",
+      })
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
 
-    test("deslike comment", (done) => {
-       userTwo
-        .put(`/comments/${userOneInfo.commentid}/likes`)
-        .send({
-          action: "REMOVE"
-        })
-        .expect("Content-Type", /json/)
-        .expect(200, done);
-    });
+  test("deslike comment", (done) => {
+    userTwo
+      .put(`/comments/${userOneInfo.commentid}/likes`)
+      .send({
+        action: "REMOVE",
+      })
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
 
-
-    test("post a comment on a comment", (done) => {
+  test("post a comment on a comment", (done) => {
     userTwo
       .post(`/posts/${userTwoInfo.postid}?comment=${userOneInfo.commentid}`)
       .send({
-        content: "hello"
+        content: "hello",
       })
       .expect("Content-Type", /json/)
       .expect(200)
       .then((res) => {
-          expect(res.body).toHaveProperty("comment");
-          done();
+        expect(res.body).toHaveProperty("comment");
+        done();
       });
-    });
+  });
 
-    ///ERROR TEST
-    test("cant't post on a comment that doesn't exist", (done) => {
+  ///ERROR TEST
+  test("cant't post on a comment that doesn't exist", (done) => {
     userTwo
       .post(`/posts/${userTwoInfo.postid}?comment=${testUUID}`)
       .send({
-        content: "hello"
+        content: "hello",
       })
       .expect("Content-Type", /json/)
-      .expect(500, done)
-    });
+      .expect(500, done);
+  });
 
-    ///ERROR TEST
-    test("cant't update comment to be empty", (done) => {
-       userOne
+  ///ERROR TEST
+  test("cant't update comment to be empty", (done) => {
+    userOne
       .put(`/comments/${userOneInfo.commentid}`)
       .send({
-        content: ""
+        content: "",
       })
       .expect("Content-Type", /json/)
-      .expect(400, done)
-    });
+      .expect(400, done);
+  });
 
-    ///ERROR TEST
-    test("cant't update comment you don't own", (done) => {
-       userTwo
+  ///ERROR TEST
+  test("cant't update comment you don't own", (done) => {
+    userTwo
       .put(`/comments/${userOneInfo.commentid}`)
       .send({
-        content: "asdsa"
+        content: "asdsa",
       })
       .expect("Content-Type", /json/)
-      .expect(500, done)
-    });
+      .expect(500, done);
+  });
 
-     test("update comment that has an image", (done) => {
-       userOne
+  test("update comment that has an image", (done) => {
+    userOne
       .put(`/comments/${userOneInfo.commentid}`)
       .send({
-        content: "bye"
+        content: "bye",
       })
       .expect("Content-Type", /json/)
-      .expect(200, done)
-    });
+      .expect(200, done);
+  });
 
-     test("update normal comment", (done) => {
-       userTwo
+  test("update normal comment", (done) => {
+    userTwo
       .put(`/comments/${userTwoInfo.commentid}`)
       .send({
-        content: "cya"
+        content: "cya",
       })
       .expect("Content-Type", /json/)
-      .expect(200, done)
-    });
+      .expect(200, done);
+  });
 
-    test("post comment with image on comment", (done) => {
-      userTwo
-        .post(`/posts/${userOneInfo.postid}?comment=${userTwoInfo.commentid}`)
-        .send({
-          content: "sad"
-        })
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-            expect(res.body).toHaveProperty("comment");
-            userTwoInfo.deleteCommentid = res.body.comment.id;
-            done();
-        });
-    });
+  test("post comment with image on comment", (done) => {
+    userTwo
+      .post(`/posts/${userOneInfo.postid}?comment=${userTwoInfo.commentid}`)
+      .send({
+        content: "sad",
+      })
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("comment");
+        userTwoInfo.deleteCommentid = res.body.comment.id;
+        done();
+      });
+  });
 
-    ///ERROR TEST
-     test("can't delete comment you don't own", (done) => {
-      userTwo
-        .delete(`/comments/${userOneInfo.commentid}`)
-        .expect("Content-Type", /json/)
-        .expect(500, done)
-    })
+  ///ERROR TEST
+  test("can't delete comment you don't own", (done) => {
+    userTwo
+      .delete(`/comments/${userOneInfo.commentid}`)
+      .expect("Content-Type", /json/)
+      .expect(500, done);
+  });
 
+  test("delete comment", (done) => {
+    userTwo
+      .delete(`/comments/${userTwoInfo.deleteCommentid}`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
 
-    test("delete comment", (done) => {
-      userTwo
-        .delete(`/comments/${userTwoInfo.deleteCommentid}`)
-        .expect("Content-Type", /json/)
-        .expect(200, done)
-    })
+  test("get comment", (done) => {
+    userTwo
+      .get(`/comments/${userOneInfo.commentid}`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("comment");
+        done();
+      });
+  });
 
-    test("get comment", (done) => {
-      userTwo
-        .get(`/comments/${userOneInfo.commentid}`)
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-            expect(res.body).toHaveProperty("comment");
-            done();
-        });
-    });
+  ///ERROR TEST
+  test("Can't get comment that doesn't exist", (done) => {
+    userTwo
+      .get(`/comments/${testUUID}`)
+      .expect("Content-Type", /json/)
+      .expect({ message: "Comment not found." })
+      .expect(400, done);
+  });
 
-    ///ERROR TEST
-     test("Can't get comment that doesn't exist", (done) => {
-      userTwo
-        .get(`/comments/${testUUID}`)
-        .expect("Content-Type", /json/)
-        .expect({ message: "Comment not found." })
-        .expect(400, done);
-    });
+  test("get comment comments", (done) => {
+    userTwo
+      .get(`/comments/${userOneInfo.commentid}/comments`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("comments");
+        done();
+      });
+  });
 
-    test("get comment comments", (done) => {
-      userTwo
-        .get(`/comments/${userOneInfo.commentid}/comments`)
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-            expect(res.body).toHaveProperty("comments");
-            done();
-        });
-    });
+  test("get comments of comment that doesn't exist(shouldn't be an error)", (done) => {
+    userTwo
+      .get(`/comments/${testUUID}/comments`)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("comments");
+        expect(res.body.comments.length).toEqual(0);
+        done();
+      });
+  });
 
-    test("get comments of comment that doesn't exist(shouldn't be an error)", (done) => {
-      userTwo
-        .get(`/comments/${testUUID}/comments`)
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-            expect(res.body).toHaveProperty("comments");
-            expect(res.body.comments.length).toEqual(0);
-            done();
-        });
-    });
+  test("get notifications", (done) => {
+    userTwo
+      .get("/notifications")
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("notifications");
+        userTwoInfo.notificationid = res.body.notifications[0].id;
+        done();
+      });
+  });
 
-    test("get notifications", (done) => {
-      userTwo
-        .get("/notifications")
-        .expect("Content-Type", /json/)
-        .expect(200)
-        .then((res) => {
-            expect(res.body).toHaveProperty("notifications");
-            userTwoInfo.notificationid = res.body.notifications[0].id;
-            done();
-        });
-    });
+  test("clear notification", (done) => {
+    userTwo
+      .delete(`/notifications/${userTwoInfo.notificationid}`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
 
-    test("clear notification", (done) => {
-      userTwo
-        .delete(`/notifications/${userTwoInfo.notificationid}`)
-        .expect("Content-Type", /json/)
-        .expect(200, done)
-    });
+  test("clear notifications", (done) => {
+    userTwo
+      .delete(`/notifications`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
 
-    test("clear notifications", (done) => {
-      userTwo
-        .delete(`/notifications`)
-        .expect("Content-Type", /json/)
-        .expect(200, done)
-    });
-  
-    ///ERROR TEST
-   test("Can't delete post you don't own", (done) => {
+  ///ERROR TEST
+  test("Can't delete post you don't own", (done) => {
     userTwo
       .delete(`/posts/${userOneInfo.postid}`)
       .expect("Content-Type", /json/)
       .expect(500, done);
-  })
+  });
 
   test("Delete Post", (done) => {
     userTwo
       .delete(`/posts/${userTwoInfo.postid}`)
       .expect("Content-Type", /json/)
       .expect(200, done);
-  })
+  });
 
   test("Delete Other Post", (done) => {
     userOne
       .delete(`/posts/${userOneInfo.deletePostid}`)
       .expect("Content-Type", /json/)
       .expect(200, done);
-  })
-
-  test("Stop Following", (done) => {
-      userOne
-          .delete(`/users/${userTwoInfo.id}/follow`)
-          .expect("Content-Type", /json/)
-          .expect(200, done)
   });
 
   test("Stop Following", (done) => {
-      userTwo
-          .delete(`/users/${userOneInfo.id}/follow`)
-          .expect("Content-Type", /json/)
-          .expect(200, done)
+    userOne
+      .delete(`/users/${userTwoInfo.id}/follow`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
+  });
+
+  test("Stop Following", (done) => {
+    userTwo
+      .delete(`/users/${userOneInfo.id}/follow`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
   });
 
   test("send follow request", (done) => {
@@ -1034,7 +1014,7 @@ describe("Basic API functionality", () => {
       });
   });
 
-    test("get requests", (done) => {
+  test("get requests", (done) => {
     userTwo
       .get("/requests")
       .expect("Content-Type", /json/)
@@ -1047,17 +1027,16 @@ describe("Basic API functionality", () => {
   });
 
   test("Cancel Request", (done) => {
-  userOne
-    .delete(`/requests/${userOneInfo.requestid}`)
-    .expect("Content-Type", /json/)
-    .expect(200, done);
+    userOne
+      .delete(`/requests/${userOneInfo.requestid}`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
   });
 
   test("Reject Request", (done) => {
-  userOne
-    .delete(`/requests/${userTwoInfo.requestid}`)
-    .expect("Content-Type", /json/)
-    .expect(200, done);
+    userOne
+      .delete(`/requests/${userTwoInfo.requestid}`)
+      .expect("Content-Type", /json/)
+      .expect(200, done);
   });
 });
-  

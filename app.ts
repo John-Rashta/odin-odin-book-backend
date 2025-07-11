@@ -16,7 +16,10 @@ import requestsRoute from "./routes/requestsRoute";
 import postsRoute from "./routes/postsRoute";
 import commentsRoute from "./routes/commentsRoute";
 import { getAllFollowsForIo } from "./util/queries";
-import { ClientToServerEvents, ServerToClientEvents } from "./util/socketTypesInters";
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "./util/socketTypesInters";
 import { joinPost } from "./sockets/joinPost";
 import { joinUser } from "./sockets/joinUser";
 import { leavePost } from "./sockets/leavePost";
@@ -57,14 +60,19 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const io = new Server<ClientToServerEvents, ServerToClientEvents, DefaultEventsMap, any>(httpServer, { cors: corsOptions });
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  DefaultEventsMap,
+  any
+>(httpServer, { cors: corsOptions });
 
-app.use(function(req: Request, res: Response, next: NextFunction) {
+app.use(function (req: Request, res: Response, next: NextFunction) {
   req.io = io;
   next();
 });
 
-app.use("/auth",authRoute);
+app.use("/auth", authRoute);
 app.use("/users", usersRoute);
 app.use("/notifications", notificationsRoute);
 app.use("/requests", requestsRoute);
@@ -89,7 +97,7 @@ function onlyForHandshake(
       next();
     }
   };
-};
+}
 
 io.engine.use(onlyForHandshake(sessionStuff));
 io.engine.use(onlyForHandshake(passport.session()));
@@ -100,20 +108,20 @@ io.on("connection", async (socket) => {
     socket.join(`self:${req.user.id}`);
     socket.join(`user:${req.user.id}`);
     socket.join(`user:${req.user.id}:follows`);
-    socket.on("follow:join", joinFollow({socket}));
-    socket.on("follow:leave", leaveFollow({socket}));
+    socket.on("follow:join", joinFollow({ socket }));
+    socket.on("follow:leave", leaveFollow({ socket }));
     const currentFollows = await getAllFollowsForIo(req.user.id, "followers");
     if (currentFollows) {
       currentFollows.forEach((val) => {
         socket.join(`user:${val.id}:follows`);
       });
-    };
-  };
+    }
+  }
 
-  socket.on("post:join", joinPost({socket}));
-  socket.on("user:join", joinUser({socket}));
-  socket.on("post:leave", leavePost({socket}));
-  socket.on("user:leave", leaveUser({socket}));
+  socket.on("post:join", joinPost({ socket }));
+  socket.on("user:join", joinUser({ socket }));
+  socket.on("post:leave", leavePost({ socket }));
+  socket.on("user:leave", leaveUser({ socket }));
 });
 
 httpServer.listen(PORT, () => {

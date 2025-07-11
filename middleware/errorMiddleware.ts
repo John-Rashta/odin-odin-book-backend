@@ -5,7 +5,7 @@ import { deleteLocalFile } from "../util/helperFunctions";
 const errorHandler: ErrorRequestHandler = async (err, req, res, next) => {
   console.error(err);
   if (req.file) {
-     await deleteLocalFile(req.file);
+    await deleteLocalFile(req.file);
   }
   res.status(500).json({ message: "Internal Error" });
   return;

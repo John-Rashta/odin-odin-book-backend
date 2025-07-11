@@ -13,10 +13,10 @@ import postsRoute from "../routes/postsRoute";
 import commentsRoute from "../routes/commentsRoute";
 
 const storeStuff = new PrismaSessionStore(prisma, {
-    checkPeriod: 2 * 60 * 1000, //ms
-    dbRecordIdIsSessionId: true,
-    dbRecordIdFunction: undefined,
-  });
+  checkPeriod: 2 * 60 * 1000, //ms
+  dbRecordIdIsSessionId: true,
+  dbRecordIdFunction: undefined,
+});
 
 const app = express();
 
@@ -40,7 +40,7 @@ import "../config/passport";
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/auth",authRoute);
+app.use("/auth", authRoute);
 app.use("/users", usersRoute);
 app.use("/notifications", notificationsRoute);
 app.use("/requests", requestsRoute);
@@ -51,4 +51,3 @@ app.use(errorHandler);
 
 export default app;
 export { storeStuff };
-
