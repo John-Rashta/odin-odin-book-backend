@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const httpServer = createServer(app);
 
-const corsOptions = { credentials: true, origin: ["http://localhost:5173"] };
+const corsOptions = { credentials: true, origin: ["http://localhost:5173", `https://${String(process.env.FRONTEND_URL)}`] };
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
