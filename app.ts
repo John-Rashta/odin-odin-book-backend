@@ -25,7 +25,7 @@ import { joinUser } from "./sockets/joinUser";
 import { leavePost } from "./sockets/leavePost";
 import { leaveUser } from "./sockets/leaveUser";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 const httpServer = createServer(app);
@@ -59,11 +59,11 @@ import { leaveFollow } from "./sockets/leaveFollow";
 app.use(passport.initialize());
 app.use(passport.session());
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const io = new Server<
   ClientToServerEvents,
   ServerToClientEvents,
   DefaultEventsMap,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 >(httpServer, { cors: corsOptions });
 
@@ -124,6 +124,6 @@ io.on("connection", async (socket) => {
   socket.on("user:leave", leaveUser({ socket }));
 });
 
-httpServer.listen(PORT, () => {
+httpServer.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`application is running at: http://localhost:${PORT}`);
 });

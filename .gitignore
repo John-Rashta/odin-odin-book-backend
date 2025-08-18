@@ -130,6 +130,5 @@ dist
 .pnp.*
 
 /generated
-/uploads
 
-/util/pools
+/util/pools/testStuff

@@ -16,11 +16,11 @@ declare global {
 declare global {
   namespace Express {
     interface Request {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       io?: Server<
         ClientToServerEvents,
         ServerToClientEvents,
         DefaultEventsMap,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         any
       >;
     }
