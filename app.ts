@@ -35,13 +35,16 @@ const corsOptions = { credentials: true, origin: ["http://localhost:5173", `http
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
-
+app.set("trust proxy", 1);
 const sessionStuff = session({
   secret: process.env.SECRET as string,
   resave: true,
   saveUninitialized: true,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,
+    secure: true,
+    httpOnly: true,
+    sameSite: "none",
   },
   store: new PrismaSessionStore(prisma, {
     checkPeriod: 2 * 60 * 1000, //ms
